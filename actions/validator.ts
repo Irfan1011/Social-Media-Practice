@@ -11,7 +11,7 @@ const signUpSchema = z.object({
   password: z
     .string()
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]$/,
+      /(?=.*[@$!%*?&])(?=.*[A-Z])(?=.*[a-z])(?=.*\d)\S{8,}/g,
       "Password must contain at least 1 uppercase, lowercase, number, and special character",
     )
     .min(8, "Password Must At Least 8 Length")
@@ -28,7 +28,7 @@ const signInSchema = z.object({
   password: z
     .string()
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]$/,
+      /(?=.*[@$!%*?&])(?=.*[A-Z])(?=.*[a-z])(?=.*\d)\S{8,}/g,
       "Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character",
     )
     .min(8, "Password Must At Least 8 Length")
@@ -43,7 +43,7 @@ const passwordSchema = z.object({
   password: z
     .string()
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]$/,
+      /(?=.*[@$!%*?&])(?=.*[A-Z])(?=.*[a-z])(?=.*\d)\S{8,}/g,
       "Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character",
     )
     .min(8, "Password Must At Least 8 Length")

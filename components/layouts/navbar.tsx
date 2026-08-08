@@ -31,6 +31,9 @@ async function Navbar() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+  let isAuth = false;
+
+  if (session) isAuth = true;
 
   return (
     <header className="p-4 bg-sidebar fixed w-full z-1">
@@ -87,7 +90,7 @@ async function Navbar() {
             </DropdownMenu>
 
             {/* HAMBURGER */}
-            <Hamburger />
+            <Hamburger isAuth={isAuth} />
 
             {/* AUTHENTICATION */}
             {session ? (

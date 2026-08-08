@@ -5,9 +5,14 @@ import Link from "next/link";
 import { Bell, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
+import { signOut } from "@actions/auth";
 import { Button } from "@components/ui/button";
 
-function Hamburger() {
+type HamburgerProps = {
+  isAuth: boolean;
+};
+
+function Hamburger({ isAuth }: HamburgerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { setTheme } = useTheme();
 
@@ -62,24 +67,38 @@ function Hamburger() {
           </Button>
 
           {/* AUTH */}
-          <Button
-            variant="outline"
-            className="text-primary w-full"
-            onClick={() => setIsOpen(false)}
-          >
-            <Link href="signin" className="capitalize">
-              Sign In
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            className="text-primary w-full"
-            onClick={() => setIsOpen(false)}
-          >
-            <Link href="signup" className="capitalize">
-              Sign Up
-            </Link>
-          </Button>
+          {isAuth ? (
+            <form action={signOut} className="w-full">
+              <Button
+                type="submit"
+                variant="outline"
+                className="w-full text-primary capitalize"
+              >
+                sign out
+              </Button>
+            </form>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                className="text-primary w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <Link href="signin" className="capitalize">
+                  Sign In
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="text-primary w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <Link href="signup" className="capitalize">
+                  Sign Up
+                </Link>
+              </Button>
+            </>
+          )}
         </ul>
       )}
     </>

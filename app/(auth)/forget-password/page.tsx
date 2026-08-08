@@ -10,11 +10,10 @@ import {
   FieldTitle,
   FieldDescription,
   FieldContent,
-  FieldGroup,
-  FieldLabel,
   FieldError,
 } from "@components/ui/field";
 import { Button } from "@components/ui/button";
+import { FormInputEmail } from "@components/ui/form-input";
 
 function Page() {
   const [state, dispatchAction, isPending] = useActionState(
@@ -30,28 +29,19 @@ function Page() {
             <FieldTitle>Forget Password</FieldTitle>
             <FieldSeparator />
             <FieldContent>
-              <form action={dispatchAction}>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <FieldGroup className="gap-2">
-                  <input
-                    type="text"
-                    name="email"
-                    placeholder="example@example.com"
-                    className="border rounded-md p-2"
-                    required
-                  />
-                  {!state.success && <FieldError>{state.message}</FieldError>}
-                  <Button
-                    variant="secondary"
-                    type="submit"
-                    className="cursor-pointer"
-                  >
-                    {isPending ? "Sending..." : "Send"}
-                  </Button>
-                  {state.success && (
-                    <FieldDescription>{state.message}</FieldDescription>
-                  )}
-                </FieldGroup>
+              <form action={dispatchAction} className="flex flex-col gap-2">
+                <FormInputEmail />
+                {!state.success && <FieldError>{state.message}</FieldError>}
+                <Button
+                  variant="secondary"
+                  type="submit"
+                  className="cursor-pointer"
+                >
+                  {isPending ? "Sending..." : "Send"}
+                </Button>
+                {state.success && (
+                  <FieldDescription>{state.message}</FieldDescription>
+                )}
               </form>
             </FieldContent>
           </Field>

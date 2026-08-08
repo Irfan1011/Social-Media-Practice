@@ -6,7 +6,11 @@ import { Eye, EyeClosed } from "lucide-react";
 import { FieldGroup, FieldLabel } from "./field";
 import { Button } from "./button";
 
-export function FormInputEmail() {
+type FormInputEmailProps = {
+  defaultValue?: string;
+};
+
+export function FormInputEmail({ defaultValue }: FormInputEmailProps) {
   return (
     <FieldGroup className="gap-0 relative">
       <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -14,6 +18,8 @@ export function FormInputEmail() {
         type="email"
         name="email"
         className="border rounded-md p-2"
+        defaultValue={defaultValue}
+        placeholder="example@example.com"
         required
       />
     </FieldGroup>
@@ -22,9 +28,13 @@ export function FormInputEmail() {
 
 type FormInputPasswordProps = {
   text: string;
+  defaultValue?: string;
 };
 
-export function FormInputPassword({ text }: FormInputPasswordProps) {
+export function FormInputPassword({
+  text,
+  defaultValue,
+}: FormInputPasswordProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -34,6 +44,8 @@ export function FormInputPassword({ text }: FormInputPasswordProps) {
         type={showPassword ? "text" : "password"}
         name={text}
         className="border rounded-md p-2"
+        placeholder={showPassword ? "Password" : "********"}
+        defaultValue={defaultValue}
         required
       />
       <Button
@@ -50,9 +62,10 @@ export function FormInputPassword({ text }: FormInputPasswordProps) {
 
 type FormInputProps = {
   name: string;
+  defaultValue?: string;
 };
 
-export function FormInput({ name }: FormInputProps) {
+export function FormInput({ name, defaultValue }: FormInputProps) {
   return (
     <FieldGroup className="gap-0 relative">
       <FieldLabel htmlFor={name} className="capitalize">
@@ -62,6 +75,8 @@ export function FormInput({ name }: FormInputProps) {
         type="text"
         name={name}
         className="border rounded-md p-2"
+        placeholder={name}
+        defaultValue={defaultValue}
         required
       />
     </FieldGroup>

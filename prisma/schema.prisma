@@ -17,6 +17,7 @@ datasource db {
 model User {
   id            String    @id @map("_id")
   name          String
+  username      String    @unique @default(uuid())
   email         String
   emailVerified Boolean   @default(false)
   image         String?

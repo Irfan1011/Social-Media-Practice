@@ -36,7 +36,7 @@ async function AppSidebar() {
         {session ? (
           <Button variant="ghost" className="justify-start cursor-pointer py-8">
             <Link
-              href="/profile"
+              href={`/${session.user.username}`}
               className="flex items-center gap-4 overflow-hidden"
             >
               <Avatar size="lg">

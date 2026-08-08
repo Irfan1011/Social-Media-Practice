@@ -1,53 +1,17 @@
-"use client";
+import { headers } from "next/headers";
 
-import { useActionState } from "react";
+import { auth } from "@/lib/auth";
+import SignIn from "@components/pages/signin";
+import { redirect } from "next/navigation";
 
-import { signInAction } from "@actions/auth";
-import AuthLayout from "@components/layouts/auth";
-import { FieldError } from "@components/ui/field";
-import { Button } from "@components/ui/button";
-import { FormInputPassword, FormInputEmail } from "@components/ui/form-input";
-
-function Page() {
-  const [state, dispatchAction, isPending] = useActionState(signInAction, {
-    errors: {
-      email: [],
-      password: [],
-    },
-    values: {
-      email: "",
-      password: "",
-    },
+async function Page() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
   });
 
-  return (
-    <AuthLayout title="sign in">
-      <form action={dispatchAction} className="flex flex-col gap-4 text-end">
-        <div className="flex flex-col gap-2 w-full">
-          <FormInputEmail />
-          {state.errors.email && (
-            <FieldError className="text-start">{state.errors.email}</FieldError>
-          )}
-        </div>
-        <div className="flex flex-col gap-2 w-full">
-          <FormInputPassword text="password" />
-          {state.errors.password && (
-            <FieldError className="text-start">
-              {state.errors.password}
-            </FieldError>
-          )}
-        </div>
-        <Button
-          type="submit"
-          variant="outline"
-          className="cursor-pointer"
-          disabled={isPending}
-        >
-          {isPending ? "Submitting..." : "Submit"}
-        </Button>
-      </form>
-    </AuthLayout>
-  );
+  if (session) redirect("/");
+
+  return <SignIn />;
 }
 
 export default Page;
