@@ -38,11 +38,8 @@ export const uploadStreamCloudinary = (
   );
 };
 
-export const removeCloudinaryImage = async (
-  public_id: string,
-  resource_type: string,
-) => {
+export const removeCloudinaryImage = async (public_id: string) => {
   return await cloudinary.uploader.destroy(public_id, {
-    resource_type: resource_type,
+    resource_type: "image",
   });
 };

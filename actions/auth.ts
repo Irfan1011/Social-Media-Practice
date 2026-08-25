@@ -249,7 +249,7 @@ export const updateUserImage = async (formData: FormData) => {
 
     try {
       // Delete the old Cloudinary image
-      await removeCloudinaryImage(public_id, "image");
+      await removeCloudinaryImage(public_id);
     } catch (error) {
       console.error("Failed to delete old Cloudinary image:", error);
     }
@@ -295,18 +295,27 @@ export const deleteAccount = async (formData: FormData) => {
       ),
     );
 
-  if (images.length > 0) {
-    try {
+  try {
+    if (images.length > 0) {
       await Promise.all(
-        images.map((image) => {
+        images.map(async (image) => {
           for (const public_id of image) {
-            removeCloudinaryImage(public_id, "image");
+            await removeCloudinaryImage(public_id);
           }
         }),
       );
-    } catch (error) {
-      console.error("Failed to delete Cloudinary user posts images:", error);
     }
+
+    if (user.image?.includes("https://res.cloudinary.com")) {
+      const public_id = user.image
+        .split("/upload/")[1]
+        .replace(/^v\d+\//, "")
+        .replace(/\.[^/.]+$/, "");
+
+      await removeCloudinaryImage(public_id);
+    }
+  } catch (error) {
+    console.error("Failed to delete Cloudinary user images:", error);
   }
 
   await prisma.user.delete({

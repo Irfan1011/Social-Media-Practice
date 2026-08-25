@@ -113,7 +113,7 @@ export const updateFeed = async (prevState: object, formData: FormData) => {
 
     try {
       for (const public_id of images_public_id) {
-        await removeCloudinaryImage(public_id, "image");
+        await removeCloudinaryImage(public_id);
       }
 
       const urls = await Promise.all(
@@ -170,7 +170,7 @@ export const deleteFeed = async (formData: FormData) => {
 
     try {
       for (const public_id of images) {
-        await removeCloudinaryImage(public_id, "image");
+        await removeCloudinaryImage(public_id);
       }
     } catch (error) {
       console.error("Failed to delete Cloudinary feed image:", error);
