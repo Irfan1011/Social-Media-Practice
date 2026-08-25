@@ -1,26 +1,20 @@
-import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import ProfileNavigation from "@components/layouts/profileNavigation";
 
 type ProfileLayoutProps = {
-  params: Promise<{ username: string }>;
   children: React.ReactNode;
 };
 
-async function Layout({ params, children }: ProfileLayoutProps) {
-  const { username } = await params;
-  const user = await prisma.user.findUnique({
-    where: { username: username },
+async function Layout({ children }: ProfileLayoutProps) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
   });
-
-  if (!user) {
-    notFound();
-  }
 
   return (
     <section className="w-full h-full mt-17 capitalize">
-      <ProfileNavigation username={user.username} />
+      {session && <ProfileNavigation username={session.user.username} />}
       {children}
     </section>
   );

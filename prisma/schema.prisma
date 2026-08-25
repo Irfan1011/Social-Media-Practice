@@ -15,16 +15,23 @@ datasource db {
 }
 
 model User {
-  id            String    @id @map("_id")
+  id            String     @id @map("_id")
   name          String
-  username      String    @unique @default(uuid())
+  username      String     @unique @default(uuid())
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean    @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  description   String     @default("Halo, Selamat Datang di Post Saya!")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   sessions      Session[]
   accounts      Account[]
+  story         Story[]
+  post          Post[]
+  like          Like[]
+  comment       Comment[]
+  followers     Follower[] @relation("followers")
+  following     Follower[] @relation("following")
 
   @@unique([email])
   @@map("user")
@@ -76,4 +83,55 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Story {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  image     String?
+  video     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  images      String[]
+  videos      String[]
+  description String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  like        Like[]
+  comment     Comment[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Like {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Follower {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  follower    User   @relation("followers", fields: [followerId], references: [id], onDelete: Cascade)
+  followerId  String
+  following   User   @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  followingId String
 }

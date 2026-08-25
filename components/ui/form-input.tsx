@@ -6,78 +6,80 @@ import { Eye, EyeClosed } from "lucide-react";
 import { FieldGroup, FieldLabel } from "./field";
 import { Button } from "./button";
 
-type FormInputEmailProps = {
+type FormInputFieldProps = {
+  type: string;
+  name: string;
+  placeholder: string;
   defaultValue?: string;
+  isDisabled?: boolean;
 };
 
-export function FormInputEmail({ defaultValue }: FormInputEmailProps) {
-  return (
-    <FieldGroup className="gap-0 relative">
-      <FieldLabel htmlFor="email">Email</FieldLabel>
-      <input
-        type="email"
-        name="email"
-        className="border rounded-md p-2"
-        defaultValue={defaultValue}
-        placeholder="example@example.com"
-        required
-      />
-    </FieldGroup>
-  );
-}
-
-type FormInputPasswordProps = {
-  text: string;
-  defaultValue?: string;
-};
-
-export function FormInputPassword({
-  text,
+export function FormInput({
+  type,
+  name,
   defaultValue,
-}: FormInputPasswordProps) {
+  placeholder,
+  isDisabled,
+}: FormInputFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <FieldGroup className="gap-0 relative">
-      <FieldLabel htmlFor="password">{text}</FieldLabel>
+      <FieldLabel htmlFor="password" className="capitalize">
+        {name}*
+      </FieldLabel>
       <input
-        type={showPassword ? "text" : "password"}
-        name={text}
+        type={type === "password" ? (showPassword ? "text" : "password") : type}
+        name={name}
         className="border rounded-md p-2"
-        placeholder={showPassword ? "Password" : "********"}
+        placeholder={
+          type === "password"
+            ? showPassword
+              ? placeholder
+              : "********"
+            : placeholder
+        }
         defaultValue={defaultValue}
+        disabled={isDisabled}
         required
       />
-      <Button
-        variant="ghost"
-        onClick={() => setShowPassword((prev) => !prev)}
-        className="absolute right-0 top-[35%]"
-        type="button"
-      >
-        {showPassword ? <Eye /> : <EyeClosed />}
-      </Button>
+      {type === "password" && (
+        <Button
+          variant="ghost"
+          onClick={() => setShowPassword((prev) => !prev)}
+          className="absolute right-0 top-[35%]"
+          type="button"
+        >
+          {showPassword ? <Eye /> : <EyeClosed />}
+        </Button>
+      )}
     </FieldGroup>
   );
 }
 
-type FormInputProps = {
+type FormAreaFieldProps = {
   name: string;
+  placeholder: string;
   defaultValue?: string;
 };
 
-export function FormInput({ name, defaultValue }: FormInputProps) {
+export function FormArea({
+  name,
+  placeholder,
+  defaultValue,
+}: FormAreaFieldProps) {
   return (
-    <FieldGroup className="gap-0 relative">
+    <FieldGroup className="gap-0">
       <FieldLabel htmlFor={name} className="capitalize">
-        {name}
+        {name}*
       </FieldLabel>
-      <input
-        type="text"
+      <textarea
         name={name}
+        id={name}
+        placeholder={placeholder}
+        rows={5}
         className="border rounded-md p-2"
-        placeholder={name}
         defaultValue={defaultValue}
-        required
       />
     </FieldGroup>
   );

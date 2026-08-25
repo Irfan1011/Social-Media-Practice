@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { Search, Bell, Moon, Sun } from "lucide-react";
+import { Bell, Moon, Sun } from "lucide-react";
 
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { signOut } from "@actions/auth";
 import {
   NavigationMenu,
@@ -11,11 +12,6 @@ import {
   NavigationMenuLink,
   navigationMenuTriggerStyle,
 } from "@components/ui/navigation-menu";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@components/ui/input-group";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -26,6 +22,7 @@ import {
 import { Button } from "@components/ui/button";
 import Hamburger from "@components/ui/hamburger";
 import SelectTheme from "@components/ui/selectTheme";
+import SearchUsername from "@components/pages/searchUsername";
 
 async function Navbar() {
   const session = await auth.api.getSession({
@@ -34,6 +31,8 @@ async function Navbar() {
   let isAuth = false;
 
   if (session) isAuth = true;
+
+  const users = await prisma.user.findMany();
 
   return (
     <header className="p-4 bg-sidebar fixed w-full z-1">
@@ -48,12 +47,7 @@ async function Navbar() {
 
           {/* SEARCH MID SIDE */}
           <NavigationMenuItem className="flex-1 max-w-[50%]">
-            <InputGroup>
-              <InputGroupInput placeholder="Search" />
-              <InputGroupAddon>
-                <Search />
-              </InputGroupAddon>
-            </InputGroup>
+            <SearchUsername users={users} />
           </NavigationMenuItem>
 
           {/* MENU RIGHT SIDE */}

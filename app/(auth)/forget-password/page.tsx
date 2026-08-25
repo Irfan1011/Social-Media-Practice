@@ -13,7 +13,7 @@ import {
   FieldError,
 } from "@components/ui/field";
 import { Button } from "@components/ui/button";
-import { FormInputEmail } from "@components/ui/form-input";
+import { FormInput } from "@components/ui/form-input";
 
 function Page() {
   const [state, dispatchAction, isPending] = useActionState(
@@ -30,7 +30,11 @@ function Page() {
             <FieldSeparator />
             <FieldContent>
               <form action={dispatchAction} className="flex flex-col gap-2">
-                <FormInputEmail />
+                <FormInput
+                  type="email"
+                  name="email"
+                  placeholder="example@example.com"
+                />
                 {!state.success && <FieldError>{state.message}</FieldError>}
                 <Button
                   variant="secondary"

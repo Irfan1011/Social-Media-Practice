@@ -12,7 +12,7 @@ import {
   FieldError,
   FieldContent,
 } from "@components/ui/field";
-import { FormInputPassword } from "@components/ui/form-input";
+import { FormInput } from "@components/ui/form-input";
 import { Button } from "@components/ui/button";
 
 type ResetPasswordProps = {
@@ -43,7 +43,11 @@ function Page({ searchParams }: ResetPasswordProps) {
                 action={dispatchAction}
                 className="flex justify-center flex-col gap-2"
               >
-                <FormInputPassword text="newPassword" />
+                <FormInput
+                  type="password"
+                  name="newPassword"
+                  placeholder="Password"
+                />
                 {!state.success && <FieldError>{state.message}</FieldError>}
 
                 <input type="hidden" name="token" value={token} />

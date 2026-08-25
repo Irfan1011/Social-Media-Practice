@@ -1,7 +1,6 @@
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
-
-import { auth } from "@/lib/auth";
+import { requiredSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { deleteAccount } from "@actions/auth";
 import {
   Card,
   CardContent,
@@ -9,67 +8,57 @@ import {
   CardFooter,
   CardTitle,
 } from "@components/ui/card";
-import { Field, FieldSeparator, FieldContent } from "@components/ui/field";
-import {
-  FormInputEmail,
-  FormInputPassword,
-  FormInput,
-} from "@components/ui/form-input";
+import { Field, FieldSeparator } from "@components/ui/field";
 import { Button } from "@components/ui/button";
+import UpdatePassword from "@components/pages/updatePassword";
+import UpdateUserData from "@components/pages/updateUserData";
 
 async function Page() {
-  const sessions = await auth.api.getSession({
-    headers: await headers(),
+  const session = await requiredSession();
+
+  const userAccount = await prisma.account.findFirst({
+    where: { userId: session.user.id },
   });
 
-  if (!sessions) {
-    redirect("/signup");
-  }
-
   return (
-    <section className="flex flex-col gap-8 my-4">
+    <section className="flex flex-col gap-8 py-4">
       {/* UPDATE PROFILE */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Field>
-            <FieldSeparator />
-            <FieldContent>
-              <form action="" className="flex flex-col items-center gap-4">
-                <FormInput name="name" defaultValue={sessions.user.name} />
-                <FormInput
-                  name="username"
-                  defaultValue={sessions.user.username}
-                />
-                <FormInputEmail defaultValue={sessions.user.email} />
-                <FormInputPassword text="password" defaultValue="" />
-                <Button variant="outline" className="cursor-pointer">
-                  Update
-                </Button>
-              </form>
-            </FieldContent>
-            <FieldSeparator />
-          </Field>
-        </CardContent>
-        <CardFooter>
-          <p className="text-secondary">testing</p>
-        </CardFooter>
-      </Card>
+      <UpdateUserData
+        name={session.user.name}
+        username={session.user.username}
+        description={session.user.description}
+      />
+
+      {/* UPDATE PASSWORD */}
+      {userAccount!.providerId === "credential" && (
+        <UpdatePassword
+          email={session.user.email}
+          username={session.user.username}
+        />
+      )}
 
       {/* DELETE ACCOUNT */}
       <Card>
         <CardHeader>
-          <CardTitle>Delete Account</CardTitle>
+          <CardTitle className="text-red-400">Danger Zone</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button variant="destructive" className="cursor-pointer">
-            Delete Account
-          </Button>
+          <Field>
+            <FieldSeparator />
+            <form action={deleteAccount}>
+              <input type="hidden" name="email" value={session.user.email} />
+              <Button
+                type="submit"
+                variant="destructive"
+                className="cursor-pointer"
+              >
+                Delete Account
+              </Button>
+            </form>
+          </Field>
         </CardContent>
         <CardFooter>
-          <p className="text-secondary">testing</p>
+          <p className="text-primary">*Account will be deleted permanently</p>
         </CardFooter>
       </Card>
     </section>

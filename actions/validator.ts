@@ -50,6 +50,41 @@ const passwordSchema = z.object({
     .trim(),
 });
 
+const changePasswordSchema = z.object({
+  newPassword: z
+    .string()
+    .regex(
+      /(?=.*[@$!%*?&])(?=.*[A-Z])(?=.*[a-z])(?=.*\d)\S{8,}/g,
+      "Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character",
+    )
+    .min(8, "Password Must At Least 8 Length")
+    .trim(),
+  currentPassword: z
+    .string()
+    .regex(
+      /(?=.*[@$!%*?&])(?=.*[A-Z])(?=.*[a-z])(?=.*\d)\S{8,}/g,
+      "Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character",
+    )
+    .min(8, "Password Must At Least 8 Length")
+    .trim(),
+});
+
+const updateUserSchema = z.object({
+  name: z.string().min(3).max(8).trim(),
+  username: z
+    .string()
+    .regex(
+      /((?=.*\w).\d*){8,}/g,
+      "Username must contain at least 8 char long, no special character allowed",
+    )
+    .trim(),
+  description: z.string(),
+});
+
+const descriptionFeedSchema = z.object({
+  description: z.string().min(1, "Description cannot be empty").trim(),
+});
+
 export const signUpValidator = async (data: AuthProps) => {
   const res = signUpSchema.safeParse(data);
 
@@ -70,6 +105,36 @@ export const emailValidator = async (data: AuthProps) => {
 
 export const passwordValidator = async (data: AuthProps) => {
   const res = passwordSchema.safeParse(data);
+
+  return res;
+};
+
+type UpdatePasswordValidatorProps = {
+  newPassword: string;
+  currentPassword: string;
+};
+
+export const updatePasswordValidator = async (
+  data: UpdatePasswordValidatorProps,
+) => {
+  const res = changePasswordSchema.safeParse(data);
+
+  return res;
+};
+
+type UpdateUserValidatorProps = {
+  name: string;
+  username: string;
+};
+
+export const updateUserValidator = async (data: UpdateUserValidatorProps) => {
+  const res = updateUserSchema.safeParse(data);
+
+  return res;
+};
+
+export const descriptionFeedValidator = async (description: string) => {
+  const res = descriptionFeedSchema.safeParse({ description });
 
   return res;
 };

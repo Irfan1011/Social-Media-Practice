@@ -6,11 +6,7 @@ import { signUpAction } from "@actions/auth";
 import AuthLayout from "@components/layouts/auth";
 import { FieldError } from "@/components/ui/field";
 import { Button } from "@components/ui/button";
-import {
-  FormInputEmail,
-  FormInputPassword,
-  FormInput,
-} from "@components/ui/form-input";
+import { FormInput } from "@components/ui/form-input";
 
 function Page() {
   const [state, dispatchAction, isPending] = useActionState(signUpAction, {
@@ -30,20 +26,32 @@ function Page() {
     <AuthLayout title="sign up">
       <form action={dispatchAction} className="flex flex-col gap-4 text-end">
         <div className="flex flex-col gap-2 w-full">
-          <FormInput name="name" defaultValue={state.values.name} />
+          <FormInput
+            type="text"
+            name="name"
+            placeholder="your name"
+            defaultValue={state.values.name}
+          />
           {state.errors.name && (
             <FieldError className="text-start">{state.errors.name}</FieldError>
           )}
         </div>
         <div className="flex flex-col gap-2 w-full">
-          <FormInputEmail defaultValue={state.values.email} />
+          <FormInput
+            type="email"
+            name="email"
+            placeholder="example@example.com"
+            defaultValue={state.values.email}
+          />
           {state.errors.email && (
             <FieldError className="text-start">{state.errors.email}</FieldError>
           )}
         </div>
         <div className="flex flex-col gap-2 w-full">
-          <FormInputPassword
-            text="password"
+          <FormInput
+            type="password"
+            name="password"
+            placeholder="Password"
             defaultValue={state.values.password}
           />
           {state.errors.password && (

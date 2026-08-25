@@ -5,6 +5,8 @@ import { nextCookies } from "better-auth/next-js";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
 import { after } from "next/server";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 import VerifyEmail from "@components/email/verify-email";
 
@@ -61,11 +63,26 @@ export const auth = betterAuth({
     },
   },
   user: {
+    deleteUser: { enabled: true },
     additionalFields: {
       username: {
+        type: "string",
+        input: false,
+      },
+      description: {
         type: "string",
         input: false,
       },
     },
   },
 });
+
+export const requiredSession = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) redirect("/signin");
+
+  return session;
+};
