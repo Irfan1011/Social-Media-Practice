@@ -22,6 +22,7 @@ async function Page() {
       user: { select: { username: true, image: true } },
       _count: { select: { like: true, comment: true } },
     },
+    orderBy: { createdAt: "desc" },
   });
 
   return (
@@ -47,8 +48,14 @@ async function Page() {
           </CardHeader>
 
           <CardContent>
-            {feed.images.length > 0 && <FeedCarousel images={feed.images} />}
-            <FeedDescription description={feed.description} />
+            {(feed.images.length > 0 || feed.videos.length > 0) && (
+              <FeedCarousel images={feed.images} videos={feed.videos} />
+            )}
+
+            <FeedDescription
+              description={feed.description}
+              createdAt={feed.createdAt}
+            />
           </CardContent>
 
           <CardFooter className="flex items-center gap-2">

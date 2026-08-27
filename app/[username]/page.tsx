@@ -43,6 +43,7 @@ async function Profile({ params }: ProfileProps) {
         select: { like: true, comment: true },
       },
     },
+    orderBy: { createdAt: "desc" },
   });
 
   const isFollowed = await prisma.follower.findFirst({

@@ -5,22 +5,40 @@ import z from "zod";
 
 import { requiredSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import {
-  uploadStreamCloudinary,
-  removeCloudinaryImage,
-} from "@/lib/cloudinary";
-import { descriptionFeedValidator } from "./validator";
+import { removeCloudinary } from "@/lib/cloudinary";
+import { feedValidator } from "./validator";
 
 export const addFeed = async (prevState: object, formData: FormData) => {
-  const description = formData.get("description") as string;
-  const images = formData.getAll("images") as File[];
-  const videos = formData.getAll("videos") as File[];
+  const data = {
+    description: formData.get("description") as string,
+    images: formData.get("images")?.toString(),
+    videos: formData.get("videos")?.toString(),
+  };
 
   const session = await requiredSession();
 
-  const validator = await descriptionFeedValidator(description);
+  const images = data.images ? JSON.parse(data.images) : [];
+  const videos = data.videos ? JSON.parse(data.videos) : [];
+
+  const validator = await feedValidator({
+    description: data.description,
+    images,
+    videos,
+  });
 
   if (!validator.success) {
+    if (Array.isArray(images)) {
+      for (const image of images) {
+        await removeCloudinary(image.public_id as string, "image");
+      }
+    }
+
+    if (Array.isArray(videos)) {
+      for (const video of videos) {
+        await removeCloudinary(video.public_id as string, "video");
+      }
+    }
+
     return {
       ...prevState,
       status: 400,
@@ -29,40 +47,11 @@ export const addFeed = async (prevState: object, formData: FormData) => {
     };
   }
 
-  const imagesFile = images.filter((image) => image.size > 0);
-  const videosFile = videos.filter((video) => video.size > 0);
-  const imagesUrl: string[] = [];
-  const videosUrl: string[] = [];
-
-  if (imagesFile.length > 0 || videosFile.length > 0) {
-    try {
-      const urls = await Promise.all(
-        images.map(async (image) => {
-          const arrayBuffer = await image.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
-
-          //upload to cloudinary
-          const res = await uploadStreamCloudinary(buffer, "feeds");
-
-          return res.secure_url;
-        }),
-      );
-
-      imagesUrl.push(...urls);
-    } catch (err) {
-      console.error("Failed to update profile image", err);
-    }
-  }
-
-  const data = {
-    description,
-    images: imagesUrl,
-    videos: videosUrl,
-  };
-
   await prisma.post.create({
     data: {
-      ...data,
+      description: validator.data.description,
+      images: validator.data.images.map((image) => image.secure_url),
+      videos: validator.data.videos.map((video) => video.secure_url),
       user: {
         connect: { email: session.user.email },
       },
@@ -74,14 +63,35 @@ export const addFeed = async (prevState: object, formData: FormData) => {
 };
 
 export const updateFeed = async (prevState: object, formData: FormData) => {
-  const id = formData.get("postId") as string;
-  const description = formData.get("description") as string;
-  const images = formData.getAll("images") as File[];
-  const videos = formData.getAll("videos") as File[];
+  const data = {
+    id: formData.get("postId") as string,
+    description: formData.get("description") as string,
+    images: formData.get("images") as string,
+    videos: formData.get("videos") as string,
+    deletedImages: formData.get("deletedImages") as string,
+    deletedVideos: formData.get("deletedVideos") as string,
+  };
 
   const session = await requiredSession();
 
-  const validator = await descriptionFeedValidator(description);
+  const feed = await prisma.post.findFirst({
+    where: {
+      id: data.id,
+    },
+  });
+
+  if (!feed) throw new Error("Feed Not Found");
+
+  const updatedImages = [...feed.images];
+  const updatedVideos = [...feed.videos];
+  const addedImages = data.images ? JSON.parse(data.images) : [];
+  const addedVideos = data.videos ? JSON.parse(data.videos) : [];
+
+  const validator = await feedValidator({
+    description: data.description,
+    images: addedImages,
+    videos: addedVideos,
+  });
 
   if (!validator.success) {
     return {
@@ -92,57 +102,70 @@ export const updateFeed = async (prevState: object, formData: FormData) => {
     };
   }
 
-  const feed = await prisma.post.findFirst({
-    where: {
-      id: id,
-    },
-  });
-
-  if (!feed) throw new Error("Feed Not Found");
-
-  const imagesUrl: string[] = [];
-  const videosUrl: string[] = [];
-
-  if ((images.length > 0 && feed.images.length > 0) || videos.length > 0) {
-    const images_public_id = feed.images.map((image) =>
-      image
-        .split("/upload/")[1]
-        .replace(/^v\d+\//, "")
-        .replace(/\.[^/.]+$/, ""),
+  if (addedImages.length > 0) {
+    updatedImages.push(
+      ...validator.data.images.map((image) => image.secure_url),
     );
-
-    try {
-      for (const public_id of images_public_id) {
-        await removeCloudinaryImage(public_id);
-      }
-
-      const urls = await Promise.all(
-        images.map(async (image) => {
-          const arrayBuffer = await image.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
-
-          //upload to cloudinary
-          const res = await uploadStreamCloudinary(buffer, "feeds");
-
-          return res.secure_url;
-        }),
-      );
-
-      imagesUrl.push(...urls);
-    } catch (error) {
-      console.error("Failed to update profile image", error);
-    }
+  }
+  if (addedVideos.length > 0) {
+    updatedVideos.push(
+      ...validator.data.videos.map((video) => video.secure_url),
+    );
   }
 
-  const data = {
-    description,
-    images: imagesUrl,
-    videos: videosUrl,
-  };
+  const deletedImages: string[] = JSON.parse(data.deletedImages);
+  const deletedVideos: string[] = JSON.parse(data.deletedVideos);
+  let filterUpdatedImages = updatedImages;
+  let filterUpdatedVideos = updatedVideos;
+
+  try {
+    if (deletedImages.length > 0) {
+      const images = deletedImages.map((image) =>
+        image
+          .split("/upload/")[1]
+          .replace(/^v\d+\//, "")
+          .replace(/\.[^/.]+$/, ""),
+      );
+
+      for (const public_id of images) {
+        await removeCloudinary(public_id, "image");
+      }
+
+      filterUpdatedImages = updatedImages.filter(
+        (prevImages) => !deletedImages.includes(prevImages),
+      );
+    }
+    if (deletedVideos.length > 0) {
+      const videos = deletedVideos.map((video) =>
+        video
+          .split("/upload/")[1]
+          .replace(/^v\d+\//, "")
+          .replace(/\.[^/.]+$/, ""),
+      );
+
+      for (const public_id of videos) {
+        await removeCloudinary(public_id, "video");
+      }
+
+      filterUpdatedVideos = updatedVideos.filter(
+        (prevVideos) => !deletedVideos.includes(prevVideos),
+      );
+    }
+  } catch (err) {
+    return {
+      status: 500,
+      message: "Failed to Update Feed",
+      data: err,
+    };
+  }
 
   await prisma.post.update({
-    where: { id: id },
-    data: data,
+    where: { id: data.id },
+    data: {
+      description: validator.data.description,
+      images: filterUpdatedImages,
+      videos: filterUpdatedVideos,
+    },
   });
 
   revalidatePath(`/${session.user.username}`);
@@ -160,7 +183,9 @@ export const deleteFeed = async (formData: FormData) => {
     },
   });
 
-  if (feed?.images) {
+  if (!feed) throw new Error("Feed not found");
+
+  if (feed.images) {
     const images = feed.images.map((image) =>
       image
         .split("/upload/")[1]
@@ -170,7 +195,24 @@ export const deleteFeed = async (formData: FormData) => {
 
     try {
       for (const public_id of images) {
-        await removeCloudinaryImage(public_id);
+        await removeCloudinary(public_id, "image");
+      }
+    } catch (error) {
+      console.error("Failed to delete Cloudinary feed image:", error);
+    }
+  }
+
+  if (feed.videos) {
+    const videos = feed.videos.map((video) =>
+      video
+        .split("/upload/")[1]
+        .replace(/^v\d+\//, "")
+        .replace(/\.[^/.]+$/, ""),
+    );
+
+    try {
+      for (const public_id of videos) {
+        await removeCloudinary(public_id, "video");
       }
     } catch (error) {
       console.error("Failed to delete Cloudinary feed image:", error);

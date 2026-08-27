@@ -8,10 +8,7 @@ import { revalidatePath } from "next/cache";
 
 import { auth, requiredSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import {
-  uploadStreamCloudinary,
-  removeCloudinaryImage,
-} from "@/lib/cloudinary";
+import { uploadStreamCloudinary, removeCloudinary } from "@/lib/cloudinary";
 import {
   signUpValidator,
   signInValidator,
@@ -249,7 +246,7 @@ export const updateUserImage = async (formData: FormData) => {
 
     try {
       // Delete the old Cloudinary image
-      await removeCloudinaryImage(public_id);
+      await removeCloudinary(public_id, "image");
     } catch (error) {
       console.error("Failed to delete old Cloudinary image:", error);
     }
@@ -260,7 +257,7 @@ export const updateUserImage = async (formData: FormData) => {
 
   try {
     //upload image to cloudinary cloud storage
-    const result = await uploadStreamCloudinary(buffer, "profile");
+    const result = await uploadStreamCloudinary(buffer, "profile", "image");
 
     //Update image url in database
     await prisma.user.update({
@@ -300,7 +297,7 @@ export const deleteAccount = async (formData: FormData) => {
       await Promise.all(
         images.map(async (image) => {
           for (const public_id of image) {
-            await removeCloudinaryImage(public_id);
+            await removeCloudinary(public_id, "image");
           }
         }),
       );
@@ -312,7 +309,7 @@ export const deleteAccount = async (formData: FormData) => {
         .replace(/^v\d+\//, "")
         .replace(/\.[^/.]+$/, "");
 
-      await removeCloudinaryImage(public_id);
+      await removeCloudinary(public_id, "image");
     }
   } catch (error) {
     console.error("Failed to delete Cloudinary user images:", error);

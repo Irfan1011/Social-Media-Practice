@@ -81,8 +81,22 @@ const updateUserSchema = z.object({
   description: z.string(),
 });
 
-const descriptionFeedSchema = z.object({
-  description: z.string().min(1, "Description cannot be empty").trim(),
+const cloudinaryImageSchema = z.object({
+  secure_url: z.url(),
+  public_id: z.string().min(1),
+  resource_type: z.literal("image"),
+});
+
+const cloudinaryVideoSchema = z.object({
+  secure_url: z.url(),
+  public_id: z.string().min(1),
+  resource_type: z.literal("video"),
+});
+
+const feedValidatorSchema = z.object({
+  description: z.string().trim().min(1, "Description cannot be empty"),
+  images: z.array(cloudinaryImageSchema).default([]),
+  videos: z.array(cloudinaryVideoSchema).default([]),
 });
 
 export const signUpValidator = async (data: AuthProps) => {
@@ -133,8 +147,10 @@ export const updateUserValidator = async (data: UpdateUserValidatorProps) => {
   return res;
 };
 
-export const descriptionFeedValidator = async (description: string) => {
-  const res = descriptionFeedSchema.safeParse({ description });
+type FeedValidatorProps = z.infer<typeof feedValidatorSchema>;
+
+export const feedValidator = async (data: FeedValidatorProps) => {
+  const res = feedValidatorSchema.safeParse(data);
 
   return res;
 };

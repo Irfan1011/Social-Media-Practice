@@ -4,14 +4,22 @@ import { useState } from "react";
 
 type LoadFeedDescriptionProps = {
   description: string;
+  createdAt: Date;
 };
 
-function feedDescription({ description }: LoadFeedDescriptionProps) {
+function FeedDescription({ description, createdAt }: LoadFeedDescriptionProps) {
   const [isLoadMore, setIsLoadMore] = useState(false);
 
   const handleLoadMore = () => {
     setIsLoadMore((prev) => !prev);
   };
+
+  const formattedDate = Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jakarta",
+    dateStyle: "full",
+    timeStyle: "medium",
+    hour12: true,
+  }).format(createdAt);
 
   return (
     <article className="normal-case whitespace-pre-wrap wrap-anywhere text-justify">
@@ -26,8 +34,9 @@ function feedDescription({ description }: LoadFeedDescriptionProps) {
           </span>
         )}
       </p>
+      <p className="text-stone-500 text-xs">{formattedDate}</p>
     </article>
   );
 }
 
-export default feedDescription;
+export default FeedDescription;

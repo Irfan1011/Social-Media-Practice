@@ -12,12 +12,13 @@ export default cloudinary;
 export const uploadStreamCloudinary = (
   buffer: Buffer,
   folder: string,
+  resource_type: "image" | "video",
 ): Promise<{ secure_url: string; public_id: string }> => {
   return new Promise<{ secure_url: string; public_id: string }>(
     (resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
-          { folder: `social/${folder}`, resource_type: "image" },
+          { folder: `social/${folder}`, resource_type: resource_type },
           (err, result) => {
             if (err) {
               reject(err);
@@ -38,8 +39,26 @@ export const uploadStreamCloudinary = (
   );
 };
 
-export const removeCloudinaryImage = async (public_id: string) => {
+export const removeCloudinary = async (
+  public_id: string,
+  resource_type: "image" | "video",
+) => {
   return await cloudinary.uploader.destroy(public_id, {
-    resource_type: "image",
+    resource_type: resource_type,
   });
 };
+
+export async function getUploadSignature() {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = "social/feeds";
+
+  const signature = cloudinary.utils.api_sign_request(
+    {
+      timestamp: timestamp,
+      folder: folder,
+    },
+    process.env.CLOUDINARY_API_SECRET!,
+  );
+
+  return { signature, timestamp, folder };
+}
