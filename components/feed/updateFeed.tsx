@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState, useState, useRef, useTransition } from "react";
 import {
   Pencil,
@@ -11,6 +12,7 @@ import {
   LoaderCircle,
 } from "lucide-react";
 
+import { type FeedsProps } from "@/app/(home)/@feed/page";
 import { deleteFeed, updateFeed } from "@actions/feed";
 import {
   Field,
@@ -22,29 +24,16 @@ import { Textarea } from "@components/ui/textarea";
 import { Button } from "@components/ui/button";
 import FeedCarousel from "@components/feed/feedCarousel";
 import FeedDescription from "@components/feed/feedDescription";
-import Image from "next/image";
-
-type FeedProps = {
-  id: string;
-  images: string[];
-  videos: string[];
-  description: string;
-  createdAt: Date;
-  updatedAt: Date;
-  userId: string;
-};
+import LikeFeed from "./likeFeed";
+import CommentFeed from "./comment/commentLists";
 
 type UpdateFeedProps = {
-  feed: FeedProps & {
-    _count: {
-      like: number;
-      comment: number;
-    };
-  };
+  feed: FeedsProps;
   isAuthorized: boolean;
+  username?: string;
 };
 
-function UpdateFeed({ feed, isAuthorized }: UpdateFeedProps) {
+function UpdateFeed({ feed, isAuthorized, username }: UpdateFeedProps) {
   const [state, dispatchAction, isLoading] = useActionState(updateFeed, {
     status: 200,
     message: "",
@@ -418,6 +407,11 @@ function UpdateFeed({ feed, isAuthorized }: UpdateFeedProps) {
           description={feed.description}
           createdAt={feed.createdAt}
         />
+
+        <section className="flex items-center gap-2">
+          <LikeFeed feed={feed} />
+          <CommentFeed feed={feed} username={username} />
+        </section>
       </>
     );
 }

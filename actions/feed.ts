@@ -6,7 +6,7 @@ import z from "zod";
 import { requiredSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { removeCloudinary } from "@/lib/cloudinary";
-import { feedValidator } from "./validator";
+import { feedCommentValidator, feedValidator } from "./validator";
 
 export const addFeed = async (prevState: object, formData: FormData) => {
   const data = {
@@ -226,4 +226,152 @@ export const deleteFeed = async (formData: FormData) => {
   });
 
   revalidatePath(`/${session.user.username}`);
+};
+
+export const getLikes = async (feedId: string) => {
+  const res = await prisma.like.findMany({
+    where: { postId: feedId },
+    select: {
+      id: true,
+      user: {
+        select: {
+          username: true,
+          image: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return res;
+};
+
+export const likeFeed = async (formData: FormData) => {
+  const feedId = formData.get("feedId") as string;
+
+  const session = await requiredSession();
+
+  const feed = await prisma.post.findFirst({ where: { id: feedId } });
+  if (!feed) throw new Error("Feed Not Found");
+
+  const like = await prisma.like.findFirst({
+    where: { postId: feed.id, userId: session.user.id },
+  });
+  if (like) throw new Error("Already Liked");
+
+  await prisma.like.create({
+    data: { userId: session.user.id, postId: feed.id },
+  });
+
+  revalidatePath("/");
+};
+
+export const cancelLiked = async (formData: FormData) => {
+  const feedId = formData.get("feedId") as string;
+
+  const session = await requiredSession();
+
+  const feed = await prisma.post.findFirst({ where: { id: feedId } });
+  if (!feed) throw new Error("Feed Not Found");
+
+  const likedPost = await prisma.like.findFirst({
+    where: { postId: feed.id, userId: session.user.id },
+  });
+  if (!likedPost) throw new Error("User Not Liked Yet");
+
+  await prisma.like.delete({ where: { id: likedPost.id } });
+
+  revalidatePath("/");
+};
+
+export const addComment = async (_: unknown, formData: FormData) => {
+  const data = {
+    feedId: formData.get("feedId") as string,
+    comment: formData.get("comment") as string,
+    parentId: formData.get("parentId") as string,
+  };
+
+  const session = await requiredSession();
+
+  const validator = await feedCommentValidator(data.comment);
+
+  if (!validator.success) {
+    return { message: z.prettifyError(validator.error) };
+  }
+
+  const feed = await prisma.post.findFirst({ where: { id: data.feedId } });
+  if (!feed) throw new Error("Feed Not Found");
+
+  if (data.parentId) {
+    const parentId = await prisma.comment.findFirst({
+      where: { id: data.parentId },
+    });
+    if (!parentId) throw new Error("ParentId Comment Not Found");
+  }
+
+  const res = await prisma.comment.create({
+    data: {
+      userId: session.user.id,
+      postId: feed.id,
+      comment: validator.data.comment,
+      parentId: data.parentId,
+    },
+  });
+
+  if (!res) throw new Error("Failed to add comment");
+
+  revalidatePath("/");
+  return { status: 200, message: "Success to add comment" };
+};
+
+export const updateComment = async (_: unknown, formData: FormData) => {
+  const data = {
+    commentId: formData.get("commentId") as string,
+    comment: formData.get("comment") as string,
+  };
+
+  await requiredSession();
+
+  const validator = await feedCommentValidator(data.comment);
+  if (!validator.success) {
+    return { message: z.prettifyError(validator.error) };
+  }
+
+  const comment = await prisma.comment.findFirst({
+    where: { id: data.commentId },
+  });
+  if (!comment) throw new Error("Comment Not Found");
+
+  await prisma.comment.update({
+    where: { id: data.commentId },
+    data: { comment: validator.data.comment },
+  });
+  revalidatePath("/");
+};
+
+export const deleteComment = async (formData: FormData) => {
+  const commentId = formData.get("commentId") as string;
+
+  const comment = await prisma.comment.findFirst({ where: { id: commentId } });
+  if (!comment) throw new Error("Comment Not Found");
+
+  await deleteCommentTree(comment.id);
+
+  revalidatePath("/");
+};
+
+const deleteCommentTree = async (id: string) => {
+  const children = await prisma.comment.findMany({
+    where: {
+      parentId: id,
+    },
+  });
+
+  for (const child of children) {
+    await deleteCommentTree(child.id);
+  }
+
+  await prisma.comment.delete({
+    where: { id },
+  });
 };

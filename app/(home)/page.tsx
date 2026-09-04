@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useRef, useState, useTransition } from "react";
+import { useActionState, useRef, useState, startTransition } from "react";
 import { ImageUp, Video, Send, LoaderCircle } from "lucide-react";
 
 import { addFeed } from "@actions/feed";
@@ -24,9 +24,7 @@ function Page() {
   const videoRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState<File[]>([]);
   const [videos, setVideos] = useState<File[]>([]);
-  const [_, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
-
   const handleSelectImage = () => {
     imageRef.current?.click();
   };

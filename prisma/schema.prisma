@@ -93,6 +93,8 @@ model Story {
   video     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("story")
 }
 
 model Post {
@@ -106,26 +108,36 @@ model Post {
   comment     Comment[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@map("post")
 }
 
 model Like {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId    String
+  postId    String   @db.ObjectId
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("like")
 }
 
 model Comment {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String    @db.ObjectId
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment   String
+  parent    Comment?  @relation("Reply", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId  String?   @db.ObjectId
+  child     Comment[] @relation("Reply")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("comment")
 }
 
 model Follower {
@@ -134,4 +146,6 @@ model Follower {
   followerId  String
   following   User   @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
   followingId String
+
+  @@map("follower")
 }

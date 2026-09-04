@@ -47,7 +47,7 @@ function Follower({ username, title, follows }: FollowProps) {
                       alt={follow.username}
                       className="w-full"
                     />
-                    <AvatarFallback>{follow.username.charAt(1)}</AvatarFallback>
+                    <AvatarFallback>{follow.username.charAt(0)}</AvatarFallback>
                   </Avatar>
                   {follow.username}
                 </Button>

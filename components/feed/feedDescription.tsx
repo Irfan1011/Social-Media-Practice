@@ -1,5 +1,6 @@
 "use client";
 
+import { mediumDateTimeFormatter } from "@/lib/utils";
 import { useState } from "react";
 
 type LoadFeedDescriptionProps = {
@@ -14,12 +15,7 @@ function FeedDescription({ description, createdAt }: LoadFeedDescriptionProps) {
     setIsLoadMore((prev) => !prev);
   };
 
-  const formattedDate = Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Jakarta",
-    dateStyle: "full",
-    timeStyle: "medium",
-    hour12: true,
-  }).format(createdAt);
+  const formattedDate = mediumDateTimeFormatter.format(createdAt);
 
   return (
     <article className="normal-case whitespace-pre-wrap wrap-anywhere text-justify">

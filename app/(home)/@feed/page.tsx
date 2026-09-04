@@ -1,78 +1,75 @@
-import Link from "next/link";
-import { ThumbsUp, MessageCircle } from "lucide-react";
+import { headers } from "next/headers";
 
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@components/ui/card";
-import { Button } from "@components/ui/button";
-import FeedCarousel from "@components/feed/feedCarousel";
-import FeedDescription from "@components/feed/feedDescription";
+import Feed from "@components/feed/feed";
+
+export type FeedProps = {
+  id: string;
+  images: string[];
+  videos: string[];
+  description: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type FeedsProps = FeedProps & {
+  _count: {
+    like: number;
+    comment: number;
+  };
+  user: {
+    username: string;
+    image: string | null;
+  };
+  like: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    userId: string;
+    postId: string;
+  }[];
+  comment: {
+    id: string;
+    createdAt: Date;
+    comment: string;
+    postId: string;
+    parentId: string | null;
+    user: {
+      id: string;
+      username: string;
+      image: string | null;
+    };
+  }[];
+};
 
 async function Page() {
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  const session = await auth.api.getSession({ headers: await headers() });
 
   const feeds = await prisma.post.findMany({
+    take: 10,
     include: {
       user: { select: { username: true, image: true } },
       _count: { select: { like: true, comment: true } },
+      like: session
+        ? { where: { userId: session?.user.id }, select: { id: true } }
+        : false,
+      comment: {
+        select: {
+          id: true,
+          comment: true,
+          parentId: true,
+          postId: true,
+          user: true,
+          createdAt: true,
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
 
-  return (
-    <>
-      {feeds.map((feed) => (
-        <Card key={feed.id} className="gap-4">
-          <CardHeader className="w-full">
-            <Link
-              href={`/${feed.user.username}`}
-              className="flex items-center gap-2"
-            >
-              <Avatar>
-                <AvatarImage
-                  src={feed.user.image || ""}
-                  alt={feed.user.username}
-                />
-                <AvatarFallback className="uppercase">
-                  {feed.user.username.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <CardTitle>{feed.user.username}</CardTitle>
-            </Link>
-          </CardHeader>
-
-          <CardContent>
-            {(feed.images.length > 0 || feed.videos.length > 0) && (
-              <FeedCarousel images={feed.images} videos={feed.videos} />
-            )}
-
-            <FeedDescription
-              description={feed.description}
-              createdAt={feed.createdAt}
-            />
-          </CardContent>
-
-          <CardFooter className="flex items-center gap-2">
-            {/* BUTTONS */}
-            <Button variant="ghost" className="cursor-pointer">
-              {feed._count.like}
-              <ThumbsUp />
-            </Button>
-            <Button variant="ghost" className="cursor-pointer">
-              {feed._count.comment}
-              <MessageCircle />
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
-    </>
-  );
+  return <Feed initialFeeds={feeds} session={session} />;
 }
 
 export default Page;

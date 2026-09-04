@@ -70,7 +70,7 @@ const changePasswordSchema = z.object({
 });
 
 const updateUserSchema = z.object({
-  name: z.string().min(3).max(8).trim(),
+  name: z.string().min(3).max(20).trim(),
   username: z
     .string()
     .regex(
@@ -97,6 +97,14 @@ const feedValidatorSchema = z.object({
   description: z.string().trim().min(1, "Description cannot be empty"),
   images: z.array(cloudinaryImageSchema).default([]),
   videos: z.array(cloudinaryVideoSchema).default([]),
+});
+
+const feedCommentValidatorSchema = z.object({
+  comment: z
+    .string()
+    .trim()
+    .min(1, "Comment cannot be empty")
+    .max(255, "Comment cannot be longer than 255 character"),
 });
 
 export const signUpValidator = async (data: AuthProps) => {
@@ -151,6 +159,12 @@ type FeedValidatorProps = z.infer<typeof feedValidatorSchema>;
 
 export const feedValidator = async (data: FeedValidatorProps) => {
   const res = feedValidatorSchema.safeParse(data);
+
+  return res;
+};
+
+export const feedCommentValidator = async (comment: string) => {
+  const res = feedCommentValidatorSchema.safeParse({ comment });
 
   return res;
 };

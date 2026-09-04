@@ -39,8 +39,22 @@ async function Profile({ params }: ProfileProps) {
   const feeds = await prisma.post.findMany({
     where: { userId: user.id },
     include: {
+      user: { select: { username: true, image: true } },
       _count: {
         select: { like: true, comment: true },
+      },
+      like: session
+        ? { where: { userId: session?.user.id }, select: { id: true } }
+        : false,
+      comment: {
+        select: {
+          id: true,
+          comment: true,
+          parentId: true,
+          postId: true,
+          user: true,
+          createdAt: true,
+        },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -121,6 +135,7 @@ async function Profile({ params }: ProfileProps) {
               <UpdateFeed
                 feed={feed}
                 isAuthorized={session?.user.username === username}
+                username={session?.user.username}
               />
             </article>
           ))}

@@ -84,7 +84,7 @@ function FollowDialog({ username, title, follows }: FollowProps) {
                             className="w-full"
                           />
                           <AvatarFallback>
-                            {follow.username.charAt(1)}
+                            {follow.username.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
 
