@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { startTransition, useState } from "react";
+import { startTransition, useState } from "react";
 import { Pencil, Trash } from "lucide-react";
 
 import { type CommentProps } from "./commentLists";
@@ -21,6 +21,9 @@ type CommentListProps = {
   username?: string;
   getReplies: (parentId: string) => CommentProps[];
   onAddReply: React.Dispatch<string>;
+  onSetComments: React.Dispatch<
+    React.SetStateAction<{ count: number; comments: CommentProps[] }>
+  >;
   onSetParentId: React.Dispatch<string>;
 };
 
@@ -29,6 +32,7 @@ function CommentList({
   user,
   username,
   onAddReply,
+  onSetComments,
   onSetParentId,
   getReplies,
 }: CommentListProps) {
@@ -44,6 +48,41 @@ function CommentList({
 
     startTransition(async () => {
       await deleteComment(formData);
+
+      onSetComments((prev) => {
+        const M = new Map();
+
+        for (const child of prev.comments) {
+          if (child.parentId !== null) {
+            const children = M.get(child.parentId);
+
+            if (children) {
+              children.push(child.id);
+            } else {
+              M.set(child.parentId, [child.id]);
+            }
+          }
+        }
+
+        const set = new Set();
+        const stack = [comment.id];
+
+        while (stack.length > 0) {
+          const curr = stack.pop();
+          set.add(curr);
+          const children = M.get(curr);
+
+          if (children) {
+            stack.push(...children);
+          }
+        }
+
+        return {
+          ...prev,
+          count: prev.comments.length - set.size,
+          comments: prev.comments.filter((c) => c.id !== comment.id),
+        };
+      });
     });
   };
 
@@ -77,7 +116,11 @@ function CommentList({
       </Link>
 
       {isEditing ? (
-        <UpdateComment comment={comment} onEditing={setIsEditing} />
+        <UpdateComment
+          comment={comment}
+          onEditing={setIsEditing}
+          onSetComments={onSetComments}
+        />
       ) : (
         <p className="px-10">{comment.comment}</p>
       )}
@@ -136,6 +179,7 @@ function CommentList({
                 comment={reply}
                 user={reply.user}
                 username={username}
+                onSetComments={onSetComments}
                 onAddReply={onAddReply}
                 onSetParentId={onSetParentId}
                 getReplies={getReplies}

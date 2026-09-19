@@ -14,15 +14,27 @@ export async function GET(request: Request) {
     headers: await headers(),
   });
 
+  const followers = (
+    await prisma.follower.findMany({ where: { followerId: session?.user.id } })
+  ).map((f) => f.followingId);
+
+  let userId = "";
+  if (session) userId = session.user.id;
+
   const feeds = await prisma.post.findMany({
+    where: { userId: { in: [userId, ...followers] } },
     skip: (page - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
     include: {
       user: { select: { username: true, image: true } },
       _count: { select: { like: true, comment: true } },
-      like: session
-        ? { where: { userId: session.user.id }, select: { id: true } }
-        : false,
+      like: {
+        select: {
+          userId: true,
+          postId: true,
+          user: true,
+        },
+      },
       comment: {
         select: {
           id: true,
@@ -30,13 +42,7 @@ export async function GET(request: Request) {
           parentId: true,
           postId: true,
           createdAt: true,
-          user: {
-            select: {
-              id: true,
-              username: true,
-              image: true,
-            },
-          },
+          user: true,
         },
       },
     },

@@ -25,6 +25,7 @@ function Page() {
   const [images, setImages] = useState<File[]>([]);
   const [videos, setVideos] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+
   const handleSelectImage = () => {
     imageRef.current?.click();
   };
@@ -57,7 +58,7 @@ function Page() {
   };
 
   const uploadCloudinaryWithSignature = async (file: File) => {
-    const signatureResponse = await fetch("/api/cloudinary/signature", {
+    const signatureResponse = await fetch("/api/cloudinary/signatureFeed", {
       method: "POST",
     });
 

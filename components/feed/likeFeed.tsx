@@ -1,10 +1,11 @@
 "use client";
 
+import { redirect } from "next/navigation";
 import { useOptimistic, startTransition, useState } from "react";
 import { ThumbsUp } from "lucide-react";
 
 import { type FeedsProps } from "@/app/(home)/@feed/page";
-import { likeFeed, cancelLiked, getLikes } from "@actions/feed";
+import { likeFeed } from "@actions/feed";
 import {
   Dialog,
   DialogTrigger,
@@ -17,57 +18,89 @@ import { Button } from "@components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import Link from "next/link";
 
-type LikesProps = {
-  id: string;
-  user: {
-    username: string;
-    image: string | null;
-  };
-};
-
 type LikeFeedProps = {
   feed: FeedsProps;
+  session:
+    | {
+        id: string;
+        username: string;
+        image?: string | null | undefined;
+      }
+    | undefined;
 };
 
-function LikeFeed({ feed }: LikeFeedProps) {
-  const [optimisticState, setOptimistic] = useOptimistic({
+function LikeFeed({ feed, session }: LikeFeedProps) {
+  const [likeState, setLikeState] = useState({
     count: feed._count.like,
+    userLikes: feed.like,
     isLiked: feed.like?.length > 0,
   });
-  const [likes, setLikes] = useState<LikesProps[]>([]);
+  const [optimisticState, setOptimistic] = useOptimistic(
+    likeState,
+    (prev, action: "like" | "unlike") => {
+      if (action === "like") {
+        const newUserLike = {
+          userId: session!.id,
+          postId: feed.id,
+          user: {
+            username: session!.username,
+            image: feed.user.image,
+          },
+        };
 
-  const handleAddLike = () => {
+        return {
+          ...prev,
+          count: prev.count + 1,
+          userLikes: [...prev.userLikes, newUserLike],
+          isLiked: true,
+        };
+      } else if (action === "unlike") {
+        return {
+          ...prev,
+          count: prev.count - 1,
+          userLikes: prev.userLikes.filter(
+            (like) => like.userId !== session!.id,
+          ),
+          isLiked: false,
+        };
+      }
+
+      return {
+        ...prev,
+      };
+    },
+  );
+
+  const handleLikeFeed = () => {
+    if (!session) return redirect("/signin");
     const formData = new FormData();
 
     formData.set("feedId", feed.id);
 
     startTransition(async () => {
-      setOptimistic((prev) => {
-        return { ...prev, count: prev.count + 1, isLiked: true };
+      setOptimistic(optimisticState.isLiked ? "unlike" : "like");
+
+      setLikeState((prev) => {
+        const newUserLike = {
+          userId: session!.id,
+          postId: feed.id,
+          user: {
+            username: session!.username,
+            image: feed.user.image,
+          },
+        };
+        return {
+          ...prev,
+          count: prev.isLiked ? prev.count - 1 : prev.count + 1,
+          userLikes: prev.isLiked
+            ? prev.userLikes.filter((like) => like.userId !== session!.id)
+            : [...prev.userLikes, newUserLike],
+          isLiked: !prev.isLiked,
+        };
       });
 
       await likeFeed(formData);
     });
-  };
-
-  const handleCancelLike = () => {
-    const formData = new FormData();
-
-    formData.set("feedId", feed.id);
-
-    startTransition(async () => {
-      setOptimistic((prev) => {
-        return { ...prev, count: prev.count - 1, isLiked: false };
-      });
-
-      await cancelLiked(formData);
-    });
-  };
-
-  const handleGetLikes = async () => {
-    const res = await getLikes(feed.id);
-
-    setLikes(res);
   };
 
   return (
@@ -75,11 +108,7 @@ function LikeFeed({ feed }: LikeFeedProps) {
       <Dialog>
         <DialogTrigger
           render={
-            <Button
-              variant="ghost"
-              className="p-0 cursor-pointer"
-              onClick={handleGetLikes}
-            >
+            <Button variant="ghost" className="p-0 cursor-pointer">
               {optimisticState.count}
             </Button>
           }
@@ -89,8 +118,8 @@ function LikeFeed({ feed }: LikeFeedProps) {
           <DialogHeader>
             <DialogTitle>Likes</DialogTitle>
             <DialogDescription>The Users Like This Post</DialogDescription>
-            {likes.length > 0 ? (
-              likes.map((like) => (
+            {optimisticState.userLikes.length > 0 ? (
+              optimisticState.userLikes.map((like) => (
                 <Link key={like.user.username} href={`/${like.user.username}`}>
                   <Button
                     variant="outline"
@@ -117,23 +146,13 @@ function LikeFeed({ feed }: LikeFeedProps) {
         </DialogContent>
       </Dialog>
 
-      {optimisticState.isLiked ? (
-        <Button
-          variant="ghost"
-          className="rounded-full cursor-pointer"
-          onClick={handleCancelLike}
-        >
-          <ThumbsUp fill="white" />
-        </Button>
-      ) : (
-        <Button
-          variant="ghost"
-          className="rounded-full cursor-pointer"
-          onClick={handleAddLike}
-        >
-          <ThumbsUp />
-        </Button>
-      )}
+      <Button
+        variant="ghost"
+        className="rounded-full cursor-pointer"
+        onClick={handleLikeFeed}
+      >
+        <ThumbsUp fill={optimisticState.isLiked ? "white" : ""} />
+      </Button>
     </span>
   );
 }

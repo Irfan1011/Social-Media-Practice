@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { getUploadSignature } from "@/lib/cloudinary";
+import { getUploadSignatureFeed } from "@/lib/cloudinary";
 
 export async function POST() {
   try {
-    const { signature, timestamp, folder } = await getUploadSignature();
+    const { signature, timestamp, folder } = await getUploadSignatureFeed();
 
     return NextResponse.json({
       signature,

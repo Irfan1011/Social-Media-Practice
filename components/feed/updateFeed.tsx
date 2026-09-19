@@ -30,10 +30,20 @@ import CommentFeed from "./comment/commentLists";
 type UpdateFeedProps = {
   feed: FeedsProps;
   isAuthorized: boolean;
-  username?: string;
+  session?: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    email: string;
+    emailVerified: boolean;
+    name: string;
+    image?: string | null;
+    description: string;
+    username: string;
+  };
 };
 
-function UpdateFeed({ feed, isAuthorized, username }: UpdateFeedProps) {
+function UpdateFeed({ feed, isAuthorized, session }: UpdateFeedProps) {
   const [state, dispatchAction, isLoading] = useActionState(updateFeed, {
     status: 200,
     message: "",
@@ -71,7 +81,7 @@ function UpdateFeed({ feed, isAuthorized, username }: UpdateFeedProps) {
   };
 
   const uploadCloudinaryWithSignature = async (file: File) => {
-    const signatureResponse = await fetch("/api/cloudinary/signature", {
+    const signatureResponse = await fetch("/api/cloudinary/signatureFeed", {
       method: "POST",
     });
 
@@ -409,8 +419,8 @@ function UpdateFeed({ feed, isAuthorized, username }: UpdateFeedProps) {
         />
 
         <section className="flex items-center gap-2">
-          <LikeFeed feed={feed} />
-          <CommentFeed feed={feed} username={username} />
+          <LikeFeed feed={feed} session={session} />
+          <CommentFeed feed={feed} username={session?.username} />
         </section>
       </>
     );

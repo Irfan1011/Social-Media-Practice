@@ -74,8 +74,8 @@ const updateUserSchema = z.object({
   username: z
     .string()
     .regex(
-      /((?=.*\w).\d*){8,}/g,
-      "Username must contain at least 8 char long, no special character allowed",
+      /^(?=.[A-Za-z]+)(?=.[0-9]*)[A-Za-z0-9]{8,}$/g,
+      "Username must contain at least 8 char long, no special character allowed, no space allowed",
     )
     .trim(),
   description: z.string(),
@@ -167,4 +167,14 @@ export const feedCommentValidator = async (comment: string) => {
   const res = feedCommentValidatorSchema.safeParse({ comment });
 
   return res;
+};
+
+type StoryValidatorProps = {
+  image?: string;
+  video?: string;
+};
+
+export const storyValidator = async (data: StoryValidatorProps) => {
+  if (data.image) return cloudinaryImageSchema.safeParse(data.image);
+  else return cloudinaryVideoSchema.safeParse(data.video);
 };

@@ -21,7 +21,9 @@ type FeedProps = {
   initialFeeds: FeedsProps[];
   session: {
     user: {
+      id: string;
       username: string;
+      image?: string | null;
     };
   } | null;
 };
@@ -32,6 +34,10 @@ function Feed({ initialFeeds, session }: FeedProps) {
   const [feeds, setFeeds] = useState(initialFeeds);
   const [hasMore, setHasMore] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setFeeds(initialFeeds);
+  }, [initialFeeds]);
 
   useEffect(() => {
     if (page === 1) return;
@@ -50,12 +56,6 @@ function Feed({ initialFeeds, session }: FeedProps) {
           ...feed,
           createdAt: new Date(feed.createdAt),
           updatedAt: new Date(feed.updatedAt),
-
-          like: feed.like.map((like) => ({
-            ...like,
-            createdAt: new Date(like.createdAt),
-            updatedAt: new Date(like.updatedAt),
-          })),
 
           comment: feed.comment.map((comment) => ({
             ...comment,
@@ -120,7 +120,7 @@ function Feed({ initialFeeds, session }: FeedProps) {
 
           <CardFooter className="flex items-center gap-2">
             {/* BUTTONS */}
-            <LikeFeed feed={feed} />
+            <LikeFeed feed={feed} session={session?.user} />
             <CommentLists feed={feed} username={session?.user.username} />
           </CardFooter>
         </Card>

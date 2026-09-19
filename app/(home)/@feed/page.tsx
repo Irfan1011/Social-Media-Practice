@@ -24,11 +24,12 @@ export type FeedsProps = FeedProps & {
     image: string | null;
   };
   like: {
-    id: string;
-    createdAt: Date;
-    updatedAt: Date;
     userId: string;
     postId: string;
+    user: {
+      username: string;
+      image: string | null;
+    };
   }[];
   comment: {
     id: string;
@@ -47,14 +48,26 @@ export type FeedsProps = FeedProps & {
 async function Page() {
   const session = await auth.api.getSession({ headers: await headers() });
 
+  const followers = (
+    await prisma.follower.findMany({ where: { followerId: session?.user.id } })
+  ).map((f) => f.followingId);
+
+  let userId = "";
+  if (session) userId = session.user.id;
+
   const feeds = await prisma.post.findMany({
+    where: { userId: { in: [userId, ...followers] } },
     take: 10,
     include: {
       user: { select: { username: true, image: true } },
       _count: { select: { like: true, comment: true } },
-      like: session
-        ? { where: { userId: session?.user.id }, select: { id: true } }
-        : false,
+      like: {
+        select: {
+          userId: true,
+          postId: true,
+          user: true,
+        },
+      },
       comment: {
         select: {
           id: true,

@@ -48,9 +48,24 @@ export const removeCloudinary = async (
   });
 };
 
-export async function getUploadSignature() {
+export async function getUploadSignatureFeed() {
   const timestamp = Math.floor(Date.now() / 1000);
   const folder = "social/feeds";
+
+  const signature = cloudinary.utils.api_sign_request(
+    {
+      timestamp: timestamp,
+      folder: folder,
+    },
+    process.env.CLOUDINARY_API_SECRET!,
+  );
+
+  return { signature, timestamp, folder };
+}
+
+export async function getUploadSignatureStory() {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = "social/stories";
 
   const signature = cloudinary.utils.api_sign_request(
     {

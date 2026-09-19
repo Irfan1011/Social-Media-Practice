@@ -1,6 +1,7 @@
 "use client";
 
-import { Dispatch, startTransition, useActionState } from "react";
+import Form from "next/form";
+import { useActionState, useEffect } from "react";
 import { LoaderCircle, Send } from "lucide-react";
 
 import { type CommentProps } from "./commentLists";
@@ -11,29 +12,38 @@ import { Button } from "@components/ui/button";
 
 type UpdateCommentProps = {
   comment: CommentProps;
-  onEditing: Dispatch<React.SetStateAction<boolean>>;
+  onSetComments: React.Dispatch<
+    React.SetStateAction<{ count: number; comments: CommentProps[] }>
+  >;
+  onEditing: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-function UpdateComment({ comment, onEditing }: UpdateCommentProps) {
+function UpdateComment({
+  comment,
+  onEditing,
+  onSetComments,
+}: UpdateCommentProps) {
   const [state, dispatchAction, isLoading] = useActionState(
     updateComment,
     null,
   );
 
-  const handleUpdateComment = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.currentTarget);
-
-    startTransition(() => {
-      dispatchAction(formData);
-
-      onEditing((prev) => !prev);
+  useEffect(() => {
+    if (state?.status !== 200) return;
+    onSetComments((prev) => {
+      return {
+        ...prev,
+        comments: prev.comments.map((c) =>
+          c.id === state.comment.id ? state.comment : c,
+        ),
+      };
     });
-  };
+
+    onEditing((prev) => !prev);
+  }, [state, onEditing, onSetComments]);
 
   return (
-    <form onSubmit={handleUpdateComment}>
+    <Form action={dispatchAction}>
       <Field>
         <FieldContent className="relative mt-2 ms-8 max-w-70">
           <input type="hidden" name="commentId" value={comment.id} />
@@ -54,7 +64,7 @@ function UpdateComment({ comment, onEditing }: UpdateCommentProps) {
           </Button>
         </FieldContent>
       </Field>
-    </form>
+    </Form>
   );
 }
 

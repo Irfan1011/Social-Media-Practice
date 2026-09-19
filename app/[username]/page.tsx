@@ -43,9 +43,16 @@ async function Profile({ params }: ProfileProps) {
       _count: {
         select: { like: true, comment: true },
       },
-      like: session
-        ? { where: { userId: session?.user.id }, select: { id: true } }
-        : false,
+      like: {
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          userId: true,
+          postId: true,
+          user: true,
+        },
+      },
       comment: {
         select: {
           id: true,
@@ -135,7 +142,7 @@ async function Profile({ params }: ProfileProps) {
               <UpdateFeed
                 feed={feed}
                 isAuthorized={session?.user.username === username}
-                username={session?.user.username}
+                session={session?.user}
               />
             </article>
           ))}

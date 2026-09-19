@@ -92,7 +92,7 @@ model Story {
   image     String?
   video     String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  expiredAt DateTime
 
   @@map("story")
 }

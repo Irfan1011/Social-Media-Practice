@@ -1,12 +1,14 @@
 "use client";
 
 import Form from "next/form";
+import { redirect } from "next/navigation";
 import {
   useActionState,
   useOptimistic,
   startTransition,
   useState,
   useMemo,
+  useEffect,
 } from "react";
 import { LoaderCircle, MessageCircle, Send } from "lucide-react";
 
@@ -49,13 +51,50 @@ function CommentLists({ feed, username }: CommentListsProps) {
     addComment,
     undefined,
   );
-  const [optimisticState, setOptimistic] = useOptimistic(feed._count.comment);
+  const [comments, setComments] = useState({
+    count: feed._count.comment,
+    comments: feed.comment,
+  });
+  const [optimisticState, setOptimistic] = useOptimistic(
+    comments,
+    (prev, action: "addComment" | "removeComment") => {
+      if (action === "addComment") {
+        return {
+          ...prev,
+          count: prev.count + 1,
+        };
+      } else if (action === "removeComment") {
+        return {
+          ...prev,
+          count: prev.count - 1,
+        };
+      }
+      return {
+        ...prev,
+      };
+    },
+  );
   const [reply, setReply] = useState("");
   const [parentId, setParentId] = useState("");
 
+  useEffect(() => {
+    if (state?.status !== 200) return;
+
+    setComments((prev) => {
+      return { ...prev, comments: [...prev.comments, state.comment] };
+    });
+  }, [state]);
+
   const handleAddcomment = () => {
+    if (!username) return redirect("/signin");
     startTransition(() => {
-      setOptimistic((prev) => prev + 1);
+      setOptimistic("addComment");
+      setComments((prev) => {
+        return {
+          ...prev,
+          count: prev.count + 1,
+        };
+      });
       setReply("");
     });
   };
@@ -63,7 +102,7 @@ function CommentLists({ feed, username }: CommentListsProps) {
   const commentWithParentId = useMemo(() => {
     const group: Record<string, CommentProps[]> = {};
 
-    feed.comment.forEach((comment) => {
+    optimisticState.comments.forEach((comment) => {
       if (comment.parentId === null) return;
 
       if (!group[comment.parentId]) {
@@ -74,7 +113,7 @@ function CommentLists({ feed, username }: CommentListsProps) {
     });
 
     return group;
-  }, [feed.comment]);
+  }, [optimisticState.comments]);
 
   const getReplies = (parentId: string) => {
     return commentWithParentId[parentId];
@@ -82,7 +121,7 @@ function CommentLists({ feed, username }: CommentListsProps) {
 
   return (
     <span className="flex items-center">
-      {optimisticState}
+      {optimisticState.count}
       <Dialog>
         <DialogTrigger
           render={
@@ -101,7 +140,7 @@ function CommentLists({ feed, username }: CommentListsProps) {
             <DialogTitle>Comments</DialogTitle>
             <DialogDescription>Feed Comment</DialogDescription>
             <section className="w-full max-h-100 overflow-y-scroll scrollbar-thin">
-              {feed.comment
+              {optimisticState.comments
                 .filter((comment) => comment.parentId === null)
                 .map((comment) => (
                   <CommentList
@@ -109,6 +148,7 @@ function CommentLists({ feed, username }: CommentListsProps) {
                     comment={comment}
                     user={comment.user}
                     username={username}
+                    onSetComments={setComments}
                     onAddReply={setReply}
                     onSetParentId={setParentId}
                     getReplies={getReplies}
