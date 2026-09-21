@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bell, Moon, Sun } from "lucide-react";
+import {
+  Bell,
+  MessageCircle,
+  Moon,
+  Sun,
+  User,
+  UserRoundMinus,
+  UserRoundX,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 
 import { signOut } from "@actions/auth";
@@ -10,9 +18,10 @@ import { Button } from "@components/ui/button";
 
 type HamburgerProps = {
   isAuth: boolean;
+  username?: string;
 };
 
-function Hamburger({ isAuth }: HamburgerProps) {
+function Hamburger({ isAuth, username }: HamburgerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { setTheme } = useTheme();
 
@@ -42,29 +51,92 @@ function Hamburger({ isAuth }: HamburgerProps) {
       {/* OPEN MOBILE HAMBURGER */}
       {isOpen && (
         <ul className="grid grid-flow-row gap-4 justify-items-start place-content-center rounded-sm p-4 text-sm bg-secondary absolute top-14 right-0 md:hidden">
-          {/* NOTIFICATION */}
-          <Button
-            variant="outline"
-            onClick={() => setIsOpen(false)}
-            className="w-full"
-          >
-            <Link href="notif" className="capitalize flex items-center gap-2">
-              Notification <Bell />
-            </Link>
-          </Button>
-
           {/* THEME */}
           <Button
             variant="outline"
+            className="w-full"
             onClick={() =>
               setTheme((prev) => (prev === "dark" ? "light" : "dark"))
             }
-            className="w-full"
           >
             Theme
             <Sun className="h-[1.2rem] w-[1.2rem] transition-all dark:hidden" />
             <Moon className="hidden h-[1.2rem] w-[1.2rem] transition-all dark:block" />
           </Button>
+
+          {/* ROUTE */}
+          {username && (
+            <>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <Link
+                  href="notif"
+                  className="capitalize flex items-center gap-2"
+                >
+                  Notification <Bell />
+                </Link>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <Link
+                  href={`/${username}`}
+                  className="flex gap-2 place-items-center"
+                >
+                  Profile <User />
+                </Link>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <Link href="/" className="flex gap-2 place-items-center">
+                  Feeds
+                </Link>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <Link href="/chat" className="flex gap-2 place-items-center">
+                  Chat <MessageCircle />
+                </Link>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <Link
+                  href="/unfollowers"
+                  className="flex gap-2 place-items-center"
+                >
+                  Unfollowers <UserRoundMinus />
+                </Link>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <Link href="/block" className="flex gap-2 place-items-center">
+                  Block <UserRoundX />
+                </Link>
+              </Button>
+            </>
+          )}
 
           {/* AUTH */}
           {isAuth ? (

@@ -84,7 +84,7 @@ async function Navbar() {
             </DropdownMenu>
 
             {/* HAMBURGER */}
-            <Hamburger isAuth={isAuth} />
+            <Hamburger isAuth={isAuth} username={session?.user.username} />
 
             {/* AUTHENTICATION */}
             {session ? (
