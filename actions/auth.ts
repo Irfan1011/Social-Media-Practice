@@ -362,3 +362,36 @@ export const unfollowAccount = async (formData: FormData) => {
 
   revalidatePath(`/${username}`);
 };
+
+export const blockAccount = async (formData: FormData) => {
+  const userId = formData.get("userId") as string;
+  const username = formData.get("username") as string;
+
+  const session = await requiredSession();
+
+  const isBlocked = await prisma.block.findFirst({
+    where: { blockToId: userId, blockedById: session.user.id },
+  });
+
+  if (isBlocked) {
+    await prisma.block.delete({ where: { id: isBlocked.id } });
+  } else {
+    const following = await prisma.follower.findFirst({
+      where: { followingId: session.user.id, followerId: userId },
+    });
+    if (following) {
+      await prisma.follower.delete({
+        where: { id: following.id },
+      });
+    }
+
+    await prisma.block.create({
+      data: {
+        blockedById: session.user.id,
+        blockToId: userId,
+      },
+    });
+  }
+
+  revalidatePath(`/${username}`);
+};

@@ -1,10 +1,12 @@
+import Form from "next/form";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { EllipsisVertical, UserRoundMinus } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { followAccount, unfollowAccount } from "@actions/auth";
+import { followAccount, unfollowAccount, blockAccount } from "@actions/auth";
 import {
   Card,
   CardContent,
@@ -12,6 +14,13 @@ import {
   CardTitle,
   CardDescription,
 } from "@components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+} from "@components/ui/dropdown-menu";
 import { Button } from "@components/ui/button";
 import UpdateProfileImage from "@components/pages/updateProfileImage";
 import UpdateFeed from "@components/feed/updateFeed";
@@ -74,11 +83,44 @@ async function Profile({ params }: ProfileProps) {
     },
   });
 
+  const isBlocked = await prisma.block.findFirst({
+    where: { blockToId: user.id },
+  });
+
   return (
     <section className="flex flex-col gap-4 py-4">
       <Card>
-        <CardHeader>
+        <CardHeader className="relative">
           <CardTitle className="text-center">{username}</CardTitle>
+          {session?.user.username !== username && (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button className="absolute -top-2 right-4 rounded-full text-primary cursor-pointer p-2 hover:bg-muted hover:text-foreground dark:hover:bg-muted/50">
+                    <EllipsisVertical />
+                  </button>
+                }
+              />
+              <DropdownMenuContent>
+                <DropdownMenuGroup>
+                  <Form action={blockAccount}>
+                    <input type="hidden" name="userId" value={user.id} />
+                    <input type="hidden" name="username" value={username} />
+                    <DropdownMenuItem>
+                      <Button
+                        type="submit"
+                        variant="ghost"
+                        className="w-full cursor-pointer"
+                      >
+                        <UserRoundMinus />
+                        {isBlocked ? "Unblocked" : "Block"}
+                      </Button>
+                    </DropdownMenuItem>
+                  </Form>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <article className="flex justify-evenly items-center">
@@ -111,21 +153,23 @@ async function Profile({ params }: ProfileProps) {
           <CardDescription className="normal-case whitespace-pre-wrap">
             {user.description || "Hallo, Selamat Datang di Post Saya!"}
           </CardDescription>
-          {session?.user.username !== username && session?.user && (
-            <form action={isFollowed ? unfollowAccount : followAccount}>
-              {isFollowed && (
-                <input type="hidden" name="followId" value={isFollowed.id} />
-              )}
-              <input type="hidden" name="username" value={username} />
-              <Button
-                type="submit"
-                variant={isFollowed ? "outline" : "secondary"}
-                className="w-full hover:cursor-pointer"
-              >
-                {isFollowed ? "Followed" : "Follow"}
-              </Button>
-            </form>
-          )}
+          {session?.user.username !== username &&
+            session?.user &&
+            !isBlocked && (
+              <form action={isFollowed ? unfollowAccount : followAccount}>
+                {isFollowed && (
+                  <input type="hidden" name="followId" value={isFollowed.id} />
+                )}
+                <input type="hidden" name="username" value={username} />
+                <Button
+                  type="submit"
+                  variant={isFollowed ? "outline" : "secondary"}
+                  className="w-full hover:cursor-pointer"
+                >
+                  {isFollowed ? "Followed" : "Follow"}
+                </Button>
+              </form>
+            )}
         </CardContent>
       </Card>
 
@@ -134,18 +178,20 @@ async function Profile({ params }: ProfileProps) {
           <CardTitle>Posts</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {feeds.map((feed) => (
-            <article
-              key={feed.id}
-              className="border border-primary rounded-md p-4"
-            >
-              <UpdateFeed
-                feed={feed}
-                isAuthorized={session?.user.username === username}
-                session={session?.user}
-              />
-            </article>
-          ))}
+          {!isBlocked &&
+            feeds.map((feed) => (
+              <article
+                key={feed.id}
+                className="border border-primary rounded-md p-4"
+              >
+                <UpdateFeed
+                  feed={feed}
+                  isAuthorized={session?.user.username === username}
+                  session={session?.user}
+                />
+              </article>
+            ))}
+          {isBlocked && <p>Success Blocked This User</p>}
         </CardContent>
       </Card>
     </section>

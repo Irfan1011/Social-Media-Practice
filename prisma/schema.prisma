@@ -32,6 +32,8 @@ model User {
   comment       Comment[]
   followers     Follower[] @relation("followers")
   following     Follower[] @relation("following")
+  blockedBy     Block[]    @relation("blockedBy")
+  blockTo       Block[]    @relation("blockTo")
 
   @@unique([email])
   @@map("user")
@@ -148,4 +150,14 @@ model Follower {
   followingId String
 
   @@map("follower")
+}
+
+model Block {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  blockedBy   User   @relation("blockedBy", fields: [blockedById], references: [id])
+  blockedById String
+  blockedTo   User   @relation("blockTo", fields: [blockToId], references: [id])
+  blockToId   String
+
+  @@map("block")
 }

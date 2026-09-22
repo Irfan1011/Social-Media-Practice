@@ -14,15 +14,15 @@ export async function GET(request: Request) {
     headers: await headers(),
   });
 
-  const followers = (
-    await prisma.follower.findMany({ where: { followerId: session?.user.id } })
-  ).map((f) => f.followingId);
+  const following = (
+    await prisma.follower.findMany({ where: { followingId: session?.user.id } })
+  ).map((f) => f.followerId);
 
   let userId = "";
   if (session) userId = session.user.id;
 
   const feeds = await prisma.post.findMany({
-    where: { userId: { in: [userId, ...followers] } },
+    where: { userId: { in: [userId, ...following] } },
     skip: (page - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
     include: {
