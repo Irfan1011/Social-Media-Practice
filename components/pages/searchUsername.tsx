@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
+import { redirect } from "next/navigation";
 import { useState } from "react";
 
-import Search from "@components/ui/search";
+import { findOrCreateConversation } from "@/lib/chat";
 import { Avatar, AvatarImage, AvatarFallback } from "@components/ui/avatar";
 import { Button } from "@components/ui/button";
+import Search from "@components/ui/search";
 
 type SearchUsernameProps = {
   users: {
@@ -19,31 +20,44 @@ type SearchUsernameProps = {
     image: string | null;
     description: string;
   }[];
+  sessionId?: string;
 };
 
-function SearchUsername({ users }: SearchUsernameProps) {
+function SearchUsername({ users, sessionId }: SearchUsernameProps) {
   const [search, setSearch] = useState("");
+
+  const handleConversation = async (
+    senderId: string | undefined,
+    receiverId: string,
+    username: string,
+  ) => {
+    setSearch("");
+
+    if (senderId) {
+      const conversation = await findOrCreateConversation(senderId, receiverId);
+      redirect(`/chat/direct/${conversation.id}`);
+    } else redirect(`/${username}`);
+  };
 
   return (
     <>
       <Search onSearch={setSearch} />
 
       {search && (
-        <div className="w-full bg-secondary mt-4 p-4 flex flex-col gap-4 rounded-md absolute">
+        <div className="w-full bg-secondary top-12 p-4 flex flex-col gap-4 rounded-md absolute z-1">
           {users
             .filter((user) => user.username.toLowerCase().includes(search))
             .map((user) => (
               <Button
-                key={user.username}
+                key={user.id}
                 variant="outline"
                 className="justify-start w-full py-8 cursor-pointer"
-                onClick={() => setSearch("")}
+                onClick={() =>
+                  handleConversation(sessionId, user.id, user.username)
+                }
               >
                 {user.username.toLowerCase().includes(search.toLowerCase()) && (
-                  <Link
-                    href={`/${user.username}`}
-                    className="flex items-center w-full gap-2"
-                  >
+                  <>
                     <Avatar>
                       <AvatarImage
                         src={user.image as string}
@@ -63,7 +77,7 @@ function SearchUsername({ users }: SearchUsernameProps) {
                     >
                       {user.username}
                     </p>
-                  </Link>
+                  </>
                 )}
               </Button>
             ))}

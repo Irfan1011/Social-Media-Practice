@@ -107,6 +107,11 @@ const feedCommentValidatorSchema = z.object({
     .max(255, "Comment cannot be longer than 255 character"),
 });
 
+const postMessageSchema = z.object({
+  message: z.string().min(1),
+  fileUrl: z.string(),
+});
+
 export const signUpValidator = async (data: AuthProps) => {
   const res = signUpSchema.safeParse(data);
 
@@ -177,4 +182,12 @@ type StoryValidatorProps = {
 export const storyValidator = async (data: StoryValidatorProps) => {
   if (data.image) return cloudinaryImageSchema.safeParse(data.image);
   else return cloudinaryVideoSchema.safeParse(data.video);
+};
+
+type PostMessageProps = z.infer<typeof postMessageSchema>;
+
+export const postMessageValidator = async (data: PostMessageProps) => {
+  const res = postMessageSchema.safeParse(data);
+
+  return res;
 };
