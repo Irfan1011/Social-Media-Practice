@@ -37,7 +37,7 @@ function AddStory() {
   };
 
   const uploadCloudinaryWithSignature = async (file: File) => {
-    const signatureResponse = await fetch("/api/cloudinary/signatureStory", {
+    const signatureResponse = await fetch("/api/cloudinary/signature/stories", {
       method: "POST",
     });
 

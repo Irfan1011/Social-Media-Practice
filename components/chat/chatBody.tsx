@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import type { Message, User } from "@/generated/prisma/client";
 import { shortDateTimeFormatter } from "@/lib/utils";
 import { Bubble, BubbleContent, BubbleGroup } from "@components/ui/bubble";
@@ -27,6 +29,22 @@ const ChatBody = ({ messages, receiver, userSessionId }: ChatBodyProps) => {
             variant="secondary"
             align={`${userSessionId === message.senderId ? "end" : "start"}`}
           >
+            {message.fileUrl.map((file) => (
+              <BubbleContent key={file} className="min-w-50 min-h-50 relative">
+                {file.includes("image/") ? (
+                  <Image src={file} alt={file} fill />
+                ) : (
+                  <video controls>
+                    <source src={file} />
+                  </video>
+                )}
+                <p
+                  className={`text-chart-2 text-xs absolute bottom-2 ${userSessionId === message.senderId ? "right-4" : "left-4"}`}
+                >
+                  {shortDateTimeFormatter.format(message.createdAt)}
+                </p>
+              </BubbleContent>
+            ))}
             <BubbleContent>
               <p className="text-foreground">{message.content}</p>
               <span className="text-xs text-chart-2">

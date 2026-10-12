@@ -93,6 +93,12 @@ const cloudinaryVideoSchema = z.object({
   resource_type: z.literal("video"),
 });
 
+const cloudinaryFileSchema = z.object({
+  secure_url: z.url(),
+  public_id: z.string().min(1),
+  resource_type: z.union([z.literal("image"), z.literal("video")]),
+});
+
 const feedValidatorSchema = z.object({
   description: z.string().trim().min(1, "Description cannot be empty"),
   images: z.array(cloudinaryImageSchema).default([]),
@@ -109,7 +115,7 @@ const feedCommentValidatorSchema = z.object({
 
 const postMessageSchema = z.object({
   message: z.string().min(1),
-  fileUrl: z.string(),
+  fileUrl: z.array(cloudinaryFileSchema).default([]),
 });
 
 export const signUpValidator = async (data: AuthProps) => {

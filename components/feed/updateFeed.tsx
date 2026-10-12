@@ -81,7 +81,7 @@ function UpdateFeed({ feed, isAuthorized, session }: UpdateFeedProps) {
   };
 
   const uploadCloudinaryWithSignature = async (file: File) => {
-    const signatureResponse = await fetch("/api/cloudinary/signatureFeed", {
+    const signatureResponse = await fetch("/api/cloudinary/signature/feeds", {
       method: "POST",
     });
 

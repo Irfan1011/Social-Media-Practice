@@ -4,6 +4,7 @@ import { Server as ServerIO } from "socket.io";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { removeCloudinary } from "@/lib/cloudinary";
 import { postMessageValidator } from "@actions/validator";
 
 type NextApiResponseServerIO = NextApiResponse & {
@@ -43,14 +44,19 @@ export default async function handler(
 
     if (!session) return res.status(401).json({ message: "Session Missing" });
 
-    if (!content) return res.status(400).json({ message: "Content Missing" });
-
     const validator = await postMessageValidator({
       message: content,
-      fileUrl: JSON.stringify(fileUrl),
+      fileUrl,
     });
 
     if (!validator.success) {
+      await Promise.all(
+        fileUrl.filter(
+          (file: { public_id: string; resource_type: "image" | "video" }) =>
+            removeCloudinary(file.public_id, file.resource_type),
+        ),
+      );
+
       return res.status(400).json({
         error: validator.error,
         data: validator.data,
@@ -59,8 +65,8 @@ export default async function handler(
 
     const message = await prisma.message.create({
       data: {
-        content,
-        fileUrl,
+        content: validator.data.message,
+        fileUrl: validator.data.fileUrl.map((file) => file.secure_url),
         conversationId,
         senderId: session.user.id,
       },
