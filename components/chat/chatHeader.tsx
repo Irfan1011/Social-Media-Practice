@@ -4,37 +4,31 @@ import { useState, useEffect } from "react";
 import { io as ClientIO } from "socket.io-client";
 
 const ChatHeaders = () => {
-  const [_, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const socketInstance = new (ClientIO as any)(
-      process.env.NEXT_PUBLIC_SITE_URL!,
-      {
-        path: "/api/socket/io",
-        addTrailingSlash: false,
-      },
-    );
-
-    socketInstance.on("connect", () => {
-      setIsConnected(true);
+    const socket = ClientIO({
+      path: "/api/socket/io",
+      addTrailingSlash: false,
     });
 
-    socketInstance.on("disconnect", () => {
-      setIsConnected(false);
-    });
+    const onConnect = () => setIsConnected(true);
+    const onDisconnect = () => setIsConnected(false);
 
-    setSocket(socketInstance);
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
 
     return () => {
-      socketInstance.disconnect();
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.disconnect();
     };
   }, []);
 
   return (
     <div>
       {isConnected && <p>Live! Realtime Chat</p>}
-      {!isConnected && <p>Fallback: Polling every 1s</p>}
+      {!isConnected && <p>Connecting to Chat...</p>}
     </div>
   );
 };

@@ -33,6 +33,7 @@ const Page = async ({
         messages={messages}
         receiver={conversation.userTwo}
         userSessionId={session.user.id}
+        conversationId={conversation.id}
       />
       <ChatInput conversationId={conversation.id} />
     </>

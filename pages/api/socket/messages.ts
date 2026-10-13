@@ -1,4 +1,4 @@
-import { Server as NetServer, Socket as NetSocket } from "net";
+import type { Server as HTTPServer } from "http";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Server as ServerIO } from "socket.io";
 
@@ -8,9 +8,9 @@ import { removeCloudinary } from "@/lib/cloudinary";
 import { postMessageValidator } from "@actions/validator";
 
 type NextApiResponseServerIO = NextApiResponse & {
-  socket: NetSocket & {
-    server: NetServer & {
-      io: ServerIO;
+  socket: {
+    server: HTTPServer & {
+      io?: ServerIO;
     };
   };
 };
@@ -74,7 +74,9 @@ export default async function handler(
 
     const key = `chat:${conversationId}:messages`;
 
-    res.socket.server.io.emit(key, message);
+    const io = res.socket.server.io;
+
+    if (io) io.emit(key, message);
 
     return res
       .status(200)

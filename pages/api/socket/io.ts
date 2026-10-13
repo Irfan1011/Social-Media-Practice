@@ -1,6 +1,5 @@
-import { Server as NetServer, Socket as NetSocket } from "net";
-import { Server as HTTPServer } from "http";
-import { NextApiRequest, NextApiResponse } from "next";
+import type { Server as HTTPServer } from "http";
+import type { NextApiRequest, NextApiResponse } from "next";
 import { Server as ServerIO } from "socket.io";
 
 export const config = {
@@ -10,19 +9,17 @@ export const config = {
 };
 
 type NextApiResponseServerIO = NextApiResponse & {
-  socket: NetSocket & {
-    server: NetServer & {
-      io: ServerIO;
+  socket: {
+    server: HTTPServer & {
+      io?: ServerIO;
     };
   };
 };
 
-const ioHandler = (_: NextApiRequest, res: NextApiResponseServerIO) => {
+const ioHandler = (_req: NextApiRequest, res: NextApiResponseServerIO) => {
   if (!res.socket.server.io) {
-    const path = "/api/socket/io";
-    const httpServer: HTTPServer = res.socket.server as any;
-    const io = new ServerIO(httpServer, {
-      path: path,
+    const io = new ServerIO(res.socket.server, {
+      path: "/api/socket/io",
       addTrailingSlash: false,
     });
 

@@ -15,6 +15,7 @@ type ChatInputProps = {
 const ChatInput = ({ conversationId }: ChatInputProps) => {
   const [selectFile, setSelectFile] = useState<File[]>([]);
   const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
 
@@ -128,7 +129,7 @@ const ChatInput = ({ conversationId }: ChatInputProps) => {
           .map((file) => uploadCloudinaryWithSignature(file)),
       );
 
-      await fetch("/api/socket/messages", {
+      const res = await fetch("/api/socket/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -139,7 +140,12 @@ const ChatInput = ({ conversationId }: ChatInputProps) => {
           conversationId,
         }),
       });
+
+      if (!res.ok) {
+        throw new Error("Failed to send message, please try again");
+      }
     } catch (err) {
+      if (err instanceof Error) setError(err);
       console.log(err);
     } finally {
       if (messageRef.current) messageRef.current.value = "";
@@ -152,6 +158,7 @@ const ChatInput = ({ conversationId }: ChatInputProps) => {
     <form onSubmit={handleSendMessage}>
       <Field>
         <FieldContent className="flex flex-col">
+          {error && <p className="text-red-400">{error.message}</p>}
           {selectFile.length > 0 && (
             <FieldGroup className="flex flex-row w-full p-4 bg-primary-foreground">
               {selectFile.map((selectedFile) => (
