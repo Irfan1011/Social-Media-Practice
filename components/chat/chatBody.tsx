@@ -1,23 +1,17 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { io as ClientIO } from "socket.io-client";
 
 import type { Message, User } from "@/generated/prisma/client";
-import { shortDateTimeFormatter } from "@/lib/utils";
-import { Bubble, BubbleContent, BubbleGroup } from "@components/ui/bubble";
+import { BubbleGroup } from "@components/ui/bubble";
+import ChatBubble from "./chatBubble";
 
 type ChatBodyProps = {
   messages: Message[];
   receiver: User;
   userSessionId: string;
   conversationId: string;
-};
-
-const formatMessageDate = (value: Date | string) => {
-  const date = new Date(value);
-  return shortDateTimeFormatter.format(date);
 };
 
 const ChatBody = ({
@@ -36,8 +30,16 @@ const ChatBody = ({
     });
   }, [chatHistory]);
 
-  const handleNewMessage = (message: Message) => {
+  const handleMessage = (message: Message) => {
     setChatHistory((prev) => {
+      const updatedChat = prev.find((item) => item.id === message.id);
+
+      if (updatedChat) {
+        return prev.map((item) =>
+          item.id === message.id ? { ...item, ...message } : item,
+        );
+      }
+
       return [...prev, message];
     });
   };
@@ -50,10 +52,10 @@ const ChatBody = ({
 
     const eventName = `chat:${conversationId}:messages`;
 
-    socket.on(eventName, handleNewMessage);
+    socket.on(eventName, handleMessage);
 
     return () => {
-      socket.off(eventName, handleNewMessage);
+      socket.off(eventName, handleMessage);
       socket.disconnect();
     };
   }, [conversationId]);
@@ -69,34 +71,12 @@ const ChatBody = ({
           </p>
         )}
         {chatHistory.map((message) => (
-          <Bubble
+          <ChatBubble
             key={message.id}
-            variant="secondary"
-            align={`${userSessionId === message.senderId ? "end" : "start"}`}
-          >
-            {message.fileUrl.map((file) => (
-              <BubbleContent key={file} className="min-w-50 min-h-50 relative">
-                {file.includes("image/") ? (
-                  <Image src={file} alt={file} fill />
-                ) : (
-                  <video controls>
-                    <source src={file} />
-                  </video>
-                )}
-                <p
-                  className={`text-chart-2 text-xs absolute bottom-2 ${userSessionId === message.senderId ? "right-4" : "left-4"}`}
-                >
-                  {formatMessageDate(message.createdAt)}
-                </p>
-              </BubbleContent>
-            ))}
-            <BubbleContent>
-              <p className="text-foreground">{message.content}</p>
-              <span className="text-xs text-chart-2">
-                {formatMessageDate(message.createdAt)}
-              </span>
-            </BubbleContent>
-          </Bubble>
+            message={message}
+            userSessionId={userSessionId}
+            conversationId={conversationId}
+          />
         ))}
       </BubbleGroup>
     </div>
