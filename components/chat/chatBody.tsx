@@ -14,6 +14,11 @@ type ChatBodyProps = {
   conversationId: string;
 };
 
+type MessageEventProps = {
+  action: "POST" | "PATCH" | "DELETE";
+  message: Message;
+};
+
 const ChatBody = ({
   messages,
   receiver,
@@ -30,17 +35,23 @@ const ChatBody = ({
     });
   }, [chatHistory]);
 
-  const handleMessage = (message: Message) => {
+  const handleMessage = (event: MessageEventProps) => {
     setChatHistory((prev) => {
-      const updatedChat = prev.find((item) => item.id === message.id);
-
-      if (updatedChat) {
-        return prev.map((item) =>
-          item.id === message.id ? { ...item, ...message } : item,
-        );
+      if (event.action === "DELETE") {
+        return prev.filter((item) => item.id !== event.message.id);
       }
 
-      return [...prev, message];
+      if (event.action === "PATCH") {
+        const updatedChat = prev.find((item) => item.id === event.message.id);
+
+        if (updatedChat) {
+          return prev.map((item) =>
+            item.id === event.message.id ? { ...item, ...event.message } : item,
+          );
+        }
+      }
+
+      return [...prev, event.message];
     });
   };
 

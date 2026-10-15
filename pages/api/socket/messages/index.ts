@@ -76,7 +76,7 @@ export default async function handler(
 
     const io = res.socket.server.io;
 
-    if (io) io.emit(key, message);
+    if (io) io.emit(key, { action: "POST", message });
 
     return res
       .status(200)

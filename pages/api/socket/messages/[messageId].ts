@@ -4,6 +4,7 @@ import { Server as ServerIO } from "socket.io";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { removeCloudinary } from "@/lib/cloudinary";
 
 type NextApiResponseServerIO = NextApiResponse & {
   socket: {
@@ -47,19 +48,40 @@ export default async function handler(
     });
 
     if (!message) return res.status(404).json({ message: "Message Not Found" });
+    let action;
 
     if (req.method === "PATCH") {
+      action = "PATCH";
       message = await prisma.message.update({
         where: { id: message.id },
         data: { content },
       });
     }
 
+    if (req.method === "DELETE") {
+      if (message.fileUrl.length > 0) {
+        for (const file of message.fileUrl) {
+          const public_id = file
+            .split("/upload/")[1]
+            .replace(/^v\d+\//, "")
+            .replace(/\.[^/.]+$/, "");
+          const resource_type = file.split("/upload/")[0].split("/")[4] as
+            "image" | "video";
+
+          await removeCloudinary(public_id, resource_type);
+        }
+      }
+      action = "DELETE";
+      message = await prisma.message.delete({ where: { id: message.id } });
+    }
+
+    if (!action) return res.status(422).json({ message: "Action Undefined" });
+
     const key = `chat:${conversationId}:messages`;
 
     const io = res.socket.server.io;
 
-    if (io) io.emit(key, message);
+    if (io) io.emit(key, { action, message });
 
     return res
       .status(200)

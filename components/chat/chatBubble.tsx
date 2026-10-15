@@ -44,18 +44,20 @@ const ChatBubble = ({
 
     const formData = new FormData(e.currentTarget);
     const content = formData.get("message")?.toString().trim();
-    const messageId = formData.get("messageId")?.toString().trim();
-    const conversationId = formData.get("conversationId")?.toString().trim();
 
     try {
       setIsSending(true);
 
-      const res = await fetch(`/api/socket/messages/${messageId}`, {
+      const res = await fetch(`/api/socket/messages/${message.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content, messageId, conversationId }),
+        body: JSON.stringify({
+          content,
+          messageId: message.id,
+          conversationId,
+        }),
       });
 
       if (!res.ok) {
@@ -67,6 +69,31 @@ const ChatBubble = ({
     } finally {
       setIsSending(false);
       setIsEditing(false);
+      setOpenOption(false);
+    }
+  };
+
+  const handleDeleteMessage = async () => {
+    try {
+      setIsSending(true);
+
+      const res = await fetch(`/api/socket/messages/${message.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messageId: message.id,
+          conversationId,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to delete message");
+    } catch (err) {
+      if (err instanceof Error) setError(err);
+      console.log(err);
+    } finally {
+      setIsSending(false);
       setOpenOption(false);
     }
   };
@@ -113,8 +140,6 @@ const ChatBubble = ({
               }}
             ></Textarea>
             {error && <p className="text-xs text-red-400">{error.message}</p>}
-            <input type="hidden" name="messageId" value={message.id} />
-            <input type="hidden" name="conversationId" value={conversationId} />
             <Button
               type="submit"
               variant="ghost"
@@ -144,6 +169,7 @@ const ChatBubble = ({
           <Button
             variant="destructive"
             className="w-full p-4 flex items-center gap-2 cursor-pointer"
+            onClick={handleDeleteMessage}
           >
             <Trash />
             Delete
