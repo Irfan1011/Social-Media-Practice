@@ -181,12 +181,14 @@ async function Profile({ params }: ProfileProps) {
           {feeds.length <= 0 && (
             <article className="flex flex-col items-center border border-primary rounded-md p-4">
               <p className="font-medium">No Post Yet.</p>
-              <Link
-                href="/"
-                className=" w-fit flex items-center gap-2 px-4 py-2 rounded-md cursor-pointer hover:bg-secondary"
-              >
-                <Camera /> Add my first Post
-              </Link>
+              {session?.user.username === user.username && (
+                <Link
+                  href="/"
+                  className=" w-fit flex items-center gap-2 px-4 py-2 rounded-md cursor-pointer hover:bg-secondary"
+                >
+                  <Camera /> Add my first Post
+                </Link>
+              )}
             </article>
           )}
           {!isBlocked &&
