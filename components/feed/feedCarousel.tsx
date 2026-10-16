@@ -78,9 +78,8 @@ function FeedCarousel({ images = [], videos = [] }: FeedCarouselProps) {
             src={media[feedIndex].url}
             alt={media[feedIndex].url}
             fill
-            objectFit="cover"
-            objectPosition="center"
-            unoptimized
+            sizes="(min-width: 768px) 50%, 100%"
+            style={{ objectFit: "cover", objectPosition: "center" }}
           />
         )}
         {media[feedIndex].type === "video" && (

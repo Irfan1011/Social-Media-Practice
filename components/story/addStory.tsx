@@ -147,6 +147,7 @@ function AddStory() {
             src={URL.createObjectURL(selectFile)}
             alt={selectFile.name}
             fill
+            sizes="(min-width: 768px) 50%, 100%"
           />
         )}
 

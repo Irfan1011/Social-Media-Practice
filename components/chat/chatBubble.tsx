@@ -114,7 +114,12 @@ const ChatBubble = ({
           onContextMenu={handleContextMenu}
         >
           {file.includes("image/") ? (
-            <Image src={file} alt={file} fill />
+            <Image
+              src={file}
+              alt={file}
+              fill
+              sizes="(min-width: 768px) 50%, 100%"
+            />
           ) : (
             <video controls>
               <source src={file} />

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { LoaderCircle } from "lucide-react";
 
 import { Skeleton } from "@components/ui/skeleton";
 
@@ -15,7 +16,13 @@ function HomeLayout({ feed, recommendation, stories, children }: LayoutProps) {
       {/* LEFT */}
       <article className="flex flex-col gap-4 w-full mb-4">
         {/* STORIES */}
-        <Suspense fallback={<Skeleton>Loading...</Skeleton>}>
+        <Suspense
+          fallback={
+            <Skeleton className="place-items-center">
+              <LoaderCircle className="animate-spin" />
+            </Skeleton>
+          }
+        >
           {stories}
         </Suspense>
 
@@ -23,12 +30,26 @@ function HomeLayout({ feed, recommendation, stories, children }: LayoutProps) {
         {children}
 
         {/* FEEDS */}
-        <Suspense fallback={<Skeleton>Loading...</Skeleton>}>{feed}</Suspense>
+        <Suspense
+          fallback={
+            <Skeleton className="place-items-center">
+              <LoaderCircle className="animate-spin" />
+            </Skeleton>
+          }
+        >
+          {feed}
+        </Suspense>
       </article>
 
       {/* RIGHT */}
       <article className="hidden md:block w-full">
-        <Suspense fallback={<Skeleton>Loading...</Skeleton>}>
+        <Suspense
+          fallback={
+            <Skeleton className="place-items-center">
+              <LoaderCircle className="animate-spin" />
+            </Skeleton>
+          }
+        >
           {recommendation}
         </Suspense>
       </article>

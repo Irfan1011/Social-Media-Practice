@@ -245,7 +245,7 @@ function UpdateFeed({ feed, isAuthorized, session }: UpdateFeedProps) {
                           }
                           alt={typeof image === "string" ? image : image.name}
                           fill
-                          unoptimized
+                          sizes="(min-width: 768px) 50%, 100%"
                         />
                         <Button
                           variant="destructive"

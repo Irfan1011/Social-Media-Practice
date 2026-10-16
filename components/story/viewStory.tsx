@@ -173,7 +173,8 @@ const ViewStory = ({
                   src={stories[storyIndex].image}
                   alt={stories[storyIndex].image}
                   fill
-                  className="object-cover"
+                  sizes="(min-width: 768px) 50%, 100%"
+                  style={{ objectFit: "cover" }}
                   onLoad={() => handleStartTimer(ImageDuration)}
                 />
               )}

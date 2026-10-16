@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { LoaderCircle } from "lucide-react";
 
 import type { FeedsProps } from "@/app/(home)/@feed/page";
 import {
@@ -127,7 +128,7 @@ function Feed({ initialFeeds, session }: FeedProps) {
       ))}
 
       <div ref={bottomRef} className="place-items-center">
-        {isLoading && <p>Loading...</p>}{" "}
+        {isLoading && <LoaderCircle className="animate-spin" />}{" "}
         {!isLoading && !hasMore && (
           <p className="capitalize">You Have Reached End Feeds</p>
         )}

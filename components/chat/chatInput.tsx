@@ -172,6 +172,7 @@ const ChatInput = ({ conversationId }: ChatInputProps) => {
                       src={URL.createObjectURL(selectedFile)}
                       alt={selectedFile.name}
                       fill
+                      sizes="(min-width: 768px) 50%, 100%"
                     />
                   )}
                   {selectedFile?.type.startsWith("video/") && (
