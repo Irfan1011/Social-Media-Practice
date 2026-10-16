@@ -35,7 +35,7 @@ function sidebarContent() {
             <Link href="/chat">
               <SidebarMenuButton
                 className="cursor-pointer"
-                isActive={pathname === "/chat"}
+                isActive={pathname?.startsWith("/chat")}
               >
                 <MessageCircle /> Chat
               </SidebarMenuButton>

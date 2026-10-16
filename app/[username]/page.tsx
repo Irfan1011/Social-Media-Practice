@@ -2,7 +2,7 @@ import Form from "next/form";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { EllipsisVertical, UserRoundMinus } from "lucide-react";
+import { Camera, EllipsisVertical, UserRoundMinus } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -178,6 +178,17 @@ async function Profile({ params }: ProfileProps) {
           <CardTitle>Posts</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
+          {feeds.length <= 0 && (
+            <article className="flex flex-col items-center border border-primary rounded-md p-4">
+              <p className="font-medium">No Post Yet.</p>
+              <Link
+                href="/"
+                className=" w-fit flex items-center gap-2 px-4 py-2 rounded-md cursor-pointer hover:bg-secondary"
+              >
+                <Camera /> Add my first Post
+              </Link>
+            </article>
+          )}
           {!isBlocked &&
             feeds.map((feed) => (
               <article

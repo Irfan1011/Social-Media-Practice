@@ -4,8 +4,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import SearchUsername from "@components/pages/searchUsername";
-import ChatLists from "@components/chat/chatLists";
+import ChatLayout from "@components/layouts/chat";
 
 export const metadata: Metadata = {
   title: "Chat",
@@ -29,18 +28,9 @@ const Layout = async ({ children }: ChatLayoutProps) => {
   });
 
   return (
-    <section className="w-full h-full md:pt-17 pt-25 grid md:grid-cols-3 gap-4 relative">
-      <section className="flex flex-col gap-2 relative">
-        <SearchUsername
-          users={followingUser.map((f) => f.follower)}
-          sessionId={session.user.id}
-        ></SearchUsername>
-        <ChatLists followingUser={followingUser} senderId={session.user.id} />
-      </section>
-      <section className="hidden md:col-span-2 md:flex flex-col justify-between gap-2">
-        {children}
-      </section>
-    </section>
+    <ChatLayout sessionId={session.user.id} followingUser={followingUser}>
+      {children}
+    </ChatLayout>
   );
 };
 

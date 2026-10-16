@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  Home,
   Bell,
   MessageCircle,
   Moon,
@@ -51,19 +52,6 @@ function Hamburger({ isAuth, username }: HamburgerProps) {
       {/* OPEN MOBILE HAMBURGER */}
       {isOpen && (
         <ul className="grid grid-flow-row gap-4 justify-items-start place-content-center rounded-sm p-4 text-sm bg-secondary absolute top-14 right-0 md:hidden">
-          {/* THEME */}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() =>
-              setTheme((prev) => (prev === "dark" ? "light" : "dark"))
-            }
-          >
-            Theme
-            <Sun className="h-[1.2rem] w-[1.2rem] transition-all dark:hidden" />
-            <Moon className="hidden h-[1.2rem] w-[1.2rem] transition-all dark:block" />
-          </Button>
-
           {/* ROUTE */}
           {username && (
             <>
@@ -72,11 +60,18 @@ function Hamburger({ isAuth, username }: HamburgerProps) {
                 className="w-full"
                 onClick={() => setIsOpen(false)}
               >
-                <Link
-                  href="notif"
-                  className="capitalize flex items-center gap-2"
-                >
-                  Notification <Bell />
+                <Link href="/" className="flex gap-2 place-items-center">
+                  Feed <Home />
+                </Link>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <Link href="/chat" className="flex gap-2 place-items-center">
+                  Chat <MessageCircle />
                 </Link>
               </Button>
 
@@ -98,18 +93,11 @@ function Hamburger({ isAuth, username }: HamburgerProps) {
                 className="w-full"
                 onClick={() => setIsOpen(false)}
               >
-                <Link href="/" className="flex gap-2 place-items-center">
-                  Feeds
-                </Link>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setIsOpen(false)}
-              >
-                <Link href="/chat" className="flex gap-2 place-items-center">
-                  Chat <MessageCircle />
+                <Link
+                  href="notif"
+                  className="capitalize flex items-center gap-2"
+                >
+                  Notification <Bell />
                 </Link>
               </Button>
 
@@ -138,13 +126,26 @@ function Hamburger({ isAuth, username }: HamburgerProps) {
             </>
           )}
 
+          {/* THEME */}
+          <Button
+            variant="outline"
+            className="w-full cursor-pointer"
+            onClick={() =>
+              setTheme((prev) => (prev === "dark" ? "light" : "dark"))
+            }
+          >
+            Theme
+            <Sun className="h-[1.2rem] w-[1.2rem] transition-all dark:hidden" />
+            <Moon className="hidden h-[1.2rem] w-[1.2rem] transition-all dark:block" />
+          </Button>
+
           {/* AUTH */}
           {isAuth ? (
             <form action={signOut} className="w-full">
               <Button
                 type="submit"
                 variant="outline"
-                className="w-full text-primary capitalize"
+                className="w-full text-primary cursor-pointer capitalize"
               >
                 sign out
               </Button>
@@ -153,7 +154,7 @@ function Hamburger({ isAuth, username }: HamburgerProps) {
             <>
               <Button
                 variant="outline"
-                className="text-primary w-full"
+                className="text-primary w-full cursor-pointer"
                 onClick={() => setIsOpen(false)}
               >
                 <Link href="signin" className="capitalize">
@@ -162,7 +163,7 @@ function Hamburger({ isAuth, username }: HamburgerProps) {
               </Button>
               <Button
                 variant="outline"
-                className="text-primary w-full"
+                className="text-primary w-full cursor-pointer"
                 onClick={() => setIsOpen(false)}
               >
                 <Link href="signup" className="capitalize">

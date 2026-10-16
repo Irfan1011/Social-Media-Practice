@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
 import { LoaderCircle, Pencil, Send, Trash } from "lucide-react";
 
 import type { Message } from "@/generated/prisma/client";
@@ -19,14 +19,17 @@ type ChatBubbleProps = {
   message: Message;
   userSessionId: string;
   conversationId: string;
+  openOption: string;
+  setOpenOption: React.Dispatch<SetStateAction<string>>;
 };
 
 const ChatBubble = ({
   message,
   userSessionId,
   conversationId,
+  openOption,
+  setOpenOption,
 }: ChatBubbleProps) => {
-  const [openOption, setOpenOption] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -34,7 +37,7 @@ const ChatBubble = ({
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsEditing(false);
-    setOpenOption((prev) => !prev);
+    setOpenOption((prev) => (prev === message.id ? "" : message.id));
   };
 
   const handleEditing = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -69,7 +72,7 @@ const ChatBubble = ({
     } finally {
       setIsSending(false);
       setIsEditing(false);
-      setOpenOption(false);
+      setOpenOption("");
     }
   };
 
@@ -94,7 +97,7 @@ const ChatBubble = ({
       console.log(err);
     } finally {
       setIsSending(false);
-      setOpenOption(false);
+      setOpenOption("");
     }
   };
 
@@ -132,6 +135,7 @@ const ChatBubble = ({
               placeholder="Type a message..."
               rows={1}
               defaultValue={message.content}
+              className="pr-12"
               style={{
                 minHeight: "2.5rem",
                 maxHeight: "7rem",
@@ -140,13 +144,15 @@ const ChatBubble = ({
               }}
             ></Textarea>
             {error && <p className="text-xs text-red-400">{error.message}</p>}
-            <Button
-              type="submit"
-              variant="ghost"
-              className="absolute top-[50%] right-0 translate-y-[-50%] text-white cursor-pointer"
-            >
-              {isSending ? <LoaderCircle className="animate-spin" /> : <Send />}
-            </Button>
+            <div className="absolute top-[50%] right-0 translate-y-[-50%]">
+              <Button type="submit" variant="ghost" className="cursor-pointer">
+                {isSending ? (
+                  <LoaderCircle className="animate-spin" />
+                ) : (
+                  <Send />
+                )}
+              </Button>
+            </div>
           </form>
         ) : (
           <p className="text-foreground">{message.content}</p>
@@ -156,26 +162,28 @@ const ChatBubble = ({
         </span>
       </BubbleContent>
 
-      {userSessionId === message.senderId && openOption && !isEditing && (
-        <BubbleContent className="w-32 absolute -bottom-26 grid gap-2 z-1">
-          <Button
-            className="w-full p-4 flex items-center gap-2 text-white cursor-pointer"
-            onClick={() => setIsEditing(true)}
-          >
-            <Pencil />
-            Edit
-          </Button>
+      {userSessionId === message.senderId &&
+        openOption === message.id &&
+        !isEditing && (
+          <BubbleContent className="w-32 absolute -bottom-26 grid gap-2 z-1">
+            <Button
+              className="w-full p-4 flex items-center gap-2 text-white cursor-pointer"
+              onClick={() => setIsEditing(true)}
+            >
+              <Pencil />
+              Edit
+            </Button>
 
-          <Button
-            variant="destructive"
-            className="w-full p-4 flex items-center gap-2 cursor-pointer"
-            onClick={handleDeleteMessage}
-          >
-            <Trash />
-            Delete
-          </Button>
-        </BubbleContent>
-      )}
+            <Button
+              variant="destructive"
+              className="w-full p-4 flex items-center gap-2 cursor-pointer"
+              onClick={handleDeleteMessage}
+            >
+              <Trash />
+              Delete
+            </Button>
+          </BubbleContent>
+        )}
     </Bubble>
   );
 };

@@ -151,7 +151,13 @@ function LikeFeed({ feed, session }: LikeFeedProps) {
         className="rounded-full cursor-pointer"
         onClick={handleLikeFeed}
       >
-        <ThumbsUp fill={optimisticState.isLiked ? "white" : ""} />
+        <ThumbsUp
+          className={
+            optimisticState.isLiked
+              ? "fill-black dark:fill-white stroke-1 stroke-white dark:stroke-black"
+              : "fill-transparent"
+          }
+        />
       </Button>
     </span>
   );

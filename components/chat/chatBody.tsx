@@ -25,6 +25,7 @@ const ChatBody = ({
   userSessionId,
   conversationId,
 }: ChatBodyProps) => {
+  const [openOption, setOpenOption] = useState("");
   const [chatHistory, setChatHistory] = useState(messages);
   const chatBodyRef = useRef<HTMLDivElement | null>(null);
 
@@ -87,6 +88,8 @@ const ChatBody = ({
             message={message}
             userSessionId={userSessionId}
             conversationId={conversationId}
+            openOption={openOption}
+            setOpenOption={setOpenOption}
           />
         ))}
       </BubbleGroup>

@@ -1,7 +1,11 @@
 "use client";
 
+import { redirect } from "next/navigation";
 import { useState, useEffect } from "react";
+import { ArrowLeftCircle } from "lucide-react";
 import { io as ClientIO } from "socket.io-client";
+
+import { Button } from "@components/ui/button";
 
 const ChatHeaders = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -26,7 +30,14 @@ const ChatHeaders = () => {
   }, []);
 
   return (
-    <div>
+    <div className="flex gap-2 place-items-center">
+      <Button
+        variant="ghost"
+        className="cursor-pointer rounded-full"
+        onClick={() => redirect("/chat")}
+      >
+        <ArrowLeftCircle className="scale-150" />
+      </Button>
       {isConnected && <p>Live! Realtime Chat</p>}
       {!isConnected && <p>Connecting to Chat...</p>}
     </div>

@@ -60,8 +60,7 @@ async function AppSidebar() {
             >
               <Avatar size="lg">
                 <AvatarImage src="" alt="" />
-                <AvatarFallback>LG</AvatarFallback>
-                <AvatarBadge className="bg-green-600 dark:bg-green-800" />
+                <AvatarFallback>L</AvatarFallback>
               </Avatar>
               Login
             </Button>
