@@ -94,7 +94,7 @@ function Hamburger({ isAuth, username }: HamburgerProps) {
                 onClick={() => setIsOpen(false)}
               >
                 <Link
-                  href="notif"
+                  href="notification"
                   className="capitalize flex items-center gap-2"
                 >
                   Notification <Bell />

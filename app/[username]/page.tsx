@@ -6,7 +6,7 @@ import { Camera, EllipsisVertical, UserRoundMinus } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { followAccount, unfollowAccount, blockAccount } from "@actions/auth";
+import { followAccount, blockAccount } from "@actions/auth";
 import {
   Card,
   CardContent,
@@ -156,10 +156,7 @@ async function Profile({ params }: ProfileProps) {
           {session?.user.username !== username &&
             session?.user &&
             !isBlocked && (
-              <form action={isFollowed ? unfollowAccount : followAccount}>
-                {isFollowed && (
-                  <input type="hidden" name="followId" value={isFollowed.id} />
-                )}
+              <form action={followAccount}>
                 <input type="hidden" name="username" value={username} />
                 <Button
                   type="submit"

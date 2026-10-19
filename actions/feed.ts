@@ -240,12 +240,33 @@ export const likeFeed = async (formData: FormData) => {
     where: { postId: feed.id, userId: session.user.id },
   });
 
+  const notification = await prisma.notification.findFirst({
+    where: { senderId: session.user.id, receiverId: feed.userId },
+  });
+
   if (like) {
-    await prisma.like.delete({ where: { id: like.id } });
+    await prisma.like.delete({ where: { id: like?.id } });
+
+    if (notification) {
+      await prisma.notification.delete({
+        where: { id: notification.id },
+      });
+    }
   } else {
     await prisma.like.create({
       data: { userId: session.user.id, postId: feed.id },
     });
+
+    if (feed.userId !== session.user.id) {
+      await prisma.notification.create({
+        data: {
+          type: "LIKE",
+          contentId: feed.id,
+          senderId: session.user.id,
+          receiverId: feed.userId,
+        },
+      });
+    }
   }
 };
 
@@ -274,7 +295,7 @@ export const addComment = async (_: unknown, formData: FormData) => {
     if (!parentId) throw new Error("ParentId Comment Not Found");
   }
 
-  const res = await prisma.comment.create({
+  const comment = await prisma.comment.create({
     data: {
       userId: session.user.id,
       postId: feed.id,
@@ -288,9 +309,20 @@ export const addComment = async (_: unknown, formData: FormData) => {
     },
   });
 
-  if (!res) throw new Error("Failed to add comment");
+  if (feed.userId !== session.user.id) {
+    await prisma.notification.create({
+      data: {
+        type: "COMMENT",
+        contentId: comment.id,
+        senderId: session.user.id,
+        receiverId: feed.userId,
+      },
+    });
+  }
 
-  return { status: 200, message: "Success to add comment", comment: res };
+  if (!comment) throw new Error("Failed to add comment");
+
+  return { status: 200, message: "Success to add comment", comment };
 };
 
 export const updateComment = async (_: unknown, formData: FormData) => {
@@ -327,8 +359,18 @@ export const updateComment = async (_: unknown, formData: FormData) => {
 export const deleteComment = async (formData: FormData) => {
   const commentId = formData.get("commentId") as string;
 
+  const session = await requiredSession();
+
   const comment = await prisma.comment.findFirst({ where: { id: commentId } });
   if (!comment) throw new Error("Comment Not Found");
+
+  const notification = await prisma.notification.findFirst({
+    where: { senderId: session.user.id, receiverId: comment.userId },
+  });
+
+  if (notification) {
+    await prisma.notification.delete({ where: { id: notification.id } });
+  }
 
   await deleteCommentTree(comment.id);
 };

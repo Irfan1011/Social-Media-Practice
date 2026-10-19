@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import { Bell, Moon, Sun } from "lucide-react";
 
-import { auth } from "@/lib/auth";
+import { requiredSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { signOut } from "@actions/auth";
 import {
@@ -18,21 +17,34 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@components/ui/dropdown-menu";
 import { Button } from "@components/ui/button";
 import Hamburger from "@components/ui/hamburger";
 import SelectTheme from "@components/ui/selectTheme";
 import SearchUsername from "@components/pages/searchUsername";
+import Notification from "@components/ui/notification";
 
 async function Navbar() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  let isAuth = false;
-
-  if (session) isAuth = true;
+  const session = await requiredSession();
 
   const users = await prisma.user.findMany();
+
+  const followNotifications = await prisma.notification.findMany({
+    where: { receiverId: session.user.id, type: "FOLLOW" },
+    include: { sender: true },
+  });
+
+  const likeNotifications = await prisma.notification.findMany({
+    where: { receiverId: session.user.id, type: "LIKE" },
+    include: { sender: true },
+  });
+
+  const commentNotifications = await prisma.notification.findMany({
+    where: { receiverId: session.user.id, type: "COMMENT" },
+    include: { sender: true },
+  });
 
   return (
     <header className="p-4 bg-sidebar fixed w-full z-1">
@@ -61,9 +73,39 @@ async function Navbar() {
                   </button>
                 }
               />
-              <DropdownMenuContent>
+              <DropdownMenuContent className="min-w-2xs max-w-3xs">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                  {followNotifications.length > 0 && (
+                    <DropdownMenuItem className="flex flex-col items-start">
+                      <DropdownMenuLabel>New Follower</DropdownMenuLabel>
+                      <Notification
+                        notification={followNotifications.slice(0, 3).sort()}
+                      />
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  {likeNotifications.length > 0 && (
+                    <DropdownMenuItem className="flex flex-col items-start">
+                      <DropdownMenuLabel>
+                        Someone like your feed
+                      </DropdownMenuLabel>
+                      <Notification
+                        notification={likeNotifications.slice(0, 3).sort()}
+                      />
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  {commentNotifications.length > 0 && (
+                    <DropdownMenuItem className="flex flex-col items-start">
+                      <DropdownMenuLabel>
+                        Someone leave a comment
+                      </DropdownMenuLabel>
+                      <Notification
+                        notification={commentNotifications.slice(0, 3).sort()}
+                      />
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -84,7 +126,10 @@ async function Navbar() {
             </DropdownMenu>
 
             {/* HAMBURGER */}
-            <Hamburger isAuth={isAuth} username={session?.user.username} />
+            <Hamburger
+              isAuth={session.user ? true : false}
+              username={session?.user.username}
+            />
 
             {/* AUTHENTICATION */}
             {session ? (

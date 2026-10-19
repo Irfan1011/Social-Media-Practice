@@ -37,6 +37,8 @@ model User {
   userOneId     Conversation[] @relation("userOne")
   useerTwoId    Conversation[] @relation("userTwo")
   messages      Message[]
+  notifReceive  Notification[] @relation("receiver")
+  notifSend     Notification[] @relation("sender")
 
   @@unique([email])
   @@map("user")
@@ -190,4 +192,23 @@ model Message {
   updatedAt      DateTime     @updatedAt
 
   @@map("message")
+}
+
+enum Type {
+  LIKE
+  COMMENT
+  FOLLOW
+}
+
+model Notification {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  type       Type
+  contentId  String
+  receiverId String
+  receiver   User     @relation("receiver", fields: [receiverId], references: [id])
+  senderId   String
+  sender     User     @relation("sender", fields: [senderId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@map("notification")
 }

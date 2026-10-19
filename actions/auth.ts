@@ -329,36 +329,46 @@ export const followAccount = async (formData: FormData) => {
   const session = await requiredSession();
 
   const followedBy = session.user.id;
-  const followToUser = await prisma.user.findFirst({
-    where: { username: username },
-  });
+  const followToUserId = (
+    await prisma.user.findFirst({
+      where: { username: username },
+    })
+  )?.id;
 
-  if (username.trim().length <= 0 || !followToUser)
+  if (username.trim().length <= 0 || !followToUserId)
     throw new Error("Username Not Exist To Follow");
 
   const isFollowed = await prisma.follower.findFirst({
-    where: { followerId: followToUser.id, followingId: followedBy },
+    where: { followerId: followToUserId, followingId: followedBy },
   });
 
-  if (isFollowed) throw new Error("User Already Followed");
-
-  await prisma.follower.create({
-    data: {
-      followerId: followToUser.id,
-      followingId: followedBy,
-    },
+  const notification = await prisma.notification.findFirst({
+    where: { senderId: followedBy, receiverId: followToUserId },
   });
 
-  revalidatePath(`/${username}`);
-};
+  if (isFollowed && notification) {
+    await prisma.follower.delete({
+      where: { id: isFollowed.id },
+    });
 
-export const unfollowAccount = async (formData: FormData) => {
-  const followId = formData.get("followId") as string;
-  const username = formData.get("username") as string;
+    await prisma.notification.delete({ where: { id: notification.id } });
+  } else {
+    await prisma.follower.create({
+      data: {
+        followerId: followToUserId,
+        followingId: followedBy,
+      },
+    });
 
-  await requiredSession();
-
-  await prisma.follower.delete({ where: { id: followId } });
+    await prisma.notification.create({
+      data: {
+        type: "FOLLOW",
+        contentId: "-",
+        senderId: followedBy,
+        receiverId: followToUserId,
+      },
+    });
+  }
 
   revalidatePath(`/${username}`);
 };

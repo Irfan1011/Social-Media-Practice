@@ -24,7 +24,7 @@ type LikeFeedProps = {
     | {
         id: string;
         username: string;
-        image?: string | null | undefined;
+        image?: string | null;
       }
     | undefined;
 };
@@ -33,7 +33,7 @@ function LikeFeed({ feed, session }: LikeFeedProps) {
   const [likeState, setLikeState] = useState({
     count: feed._count.like,
     userLikes: feed.like,
-    isLiked: feed.like?.length > 0,
+    isLiked: feed.like?.some((like) => like.userId === session?.id),
   });
   const [optimisticState, setOptimistic] = useOptimistic(
     likeState,
