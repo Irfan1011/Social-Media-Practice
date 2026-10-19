@@ -129,8 +129,11 @@ function Feed({ initialFeeds, session }: FeedProps) {
 
       <div ref={bottomRef} className="place-items-center">
         {isLoading && <LoaderCircle className="animate-spin" />}{" "}
-        {!isLoading && !hasMore && (
+        {!isLoading && !hasMore && feeds.length > 0 && (
           <p className="capitalize">You Have Reached End Feeds</p>
+        )}
+        {feeds.length === 0 && (
+          <p className="capitalize">Welcome to Social Media.</p>
         )}
       </div>
     </>

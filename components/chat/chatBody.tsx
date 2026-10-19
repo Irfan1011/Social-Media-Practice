@@ -27,7 +27,7 @@ const ChatBody = ({
 }: ChatBodyProps) => {
   const [openOption, setOpenOption] = useState("");
   const [chatHistory, setChatHistory] = useState(messages);
-  const chatBodyRef = useRef<HTMLDivElement | null>(null);
+  const chatBodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatBodyRef.current?.scrollTo({
