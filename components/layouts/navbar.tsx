@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Bell, Moon, Sun } from "lucide-react";
 
-import { requiredSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { signOut } from "@actions/auth";
 import {
@@ -25,24 +24,26 @@ import Hamburger from "@components/ui/hamburger";
 import SelectTheme from "@components/ui/selectTheme";
 import SearchUsername from "@components/pages/searchUsername";
 import Notification from "@components/ui/notification";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 async function Navbar() {
-  const session = await requiredSession();
+  const session = await auth.api.getSession({headers: await headers()})
 
   const users = await prisma.user.findMany();
 
   const followNotifications = await prisma.notification.findMany({
-    where: { receiverId: session.user.id, type: "FOLLOW" },
+    where: { receiverId: session?.user.id, type: "FOLLOW" },
     include: { sender: true },
   });
 
   const likeNotifications = await prisma.notification.findMany({
-    where: { receiverId: session.user.id, type: "LIKE" },
+    where: { receiverId: session?.user.id, type: "LIKE" },
     include: { sender: true },
   });
 
   const commentNotifications = await prisma.notification.findMany({
-    where: { receiverId: session.user.id, type: "COMMENT" },
+    where: { receiverId: session?.user.id, type: "COMMENT" },
     include: { sender: true },
   });
 
@@ -127,7 +128,7 @@ async function Navbar() {
 
             {/* HAMBURGER */}
             <Hamburger
-              isAuth={session.user ? true : false}
+              isAuth={session?.user ? true : false}
               username={session?.user.username}
             />
 
