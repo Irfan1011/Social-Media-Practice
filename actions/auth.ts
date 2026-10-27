@@ -342,16 +342,16 @@ export const followAccount = async (formData: FormData) => {
     where: { followerId: followToUserId, followingId: followedBy },
   });
 
-  const notification = await prisma.notification.findFirst({
-    where: { senderId: followedBy, receiverId: followToUserId },
-  });
-
-  if (isFollowed && notification) {
+  if (isFollowed) {
     await prisma.follower.delete({
       where: { id: isFollowed.id },
     });
 
-    await prisma.notification.delete({ where: { id: notification.id } });
+    const notification = await prisma.notification.findFirst({where: {senderId: followedBy, receiverId:followToUserId, contentId: followToUserId}})
+    
+    if(notification) {
+      await prisma.notification.delete({ where: { id: notification.id } });
+    }
   } else {
     await prisma.follower.create({
       data: {
@@ -363,7 +363,7 @@ export const followAccount = async (formData: FormData) => {
     await prisma.notification.create({
       data: {
         type: "FOLLOW",
-        contentId: "-",
+        contentId: followToUserId,
         senderId: followedBy,
         receiverId: followToUserId,
       },

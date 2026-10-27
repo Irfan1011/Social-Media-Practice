@@ -2,23 +2,22 @@ import Link from "next/link";
 import Image from "next/image";
 
 import type {
-  Comment,
   Notification,
-  Post,
   User,
 } from "@/generated/prisma/client";
 import { shortDateTimeFormatter } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { prisma } from "@/lib/prisma";
 
 type NotificationProps = {
   notification: ({ sender: User } & Notification)[];
-  comment?: Comment;
-  feed?: Post;
 };
 
-const Notification = ({ notification, comment, feed }: NotificationProps) => {
-  return notification.map(async (notif) => (
-    <article
+const Notification = ({ notification }: NotificationProps) => {
+  return notification.map(async (notif) => {
+    const [feed, comment] = await Promise.all([prisma.post.findFirst({where: {id: notif.contentId}}), prisma.comment.findFirst({where: {id: notif.contentId}})])
+    
+    return <article
       key={notif.id}
       className="w-full flex flex-wrap justify-between items-center mb-4"
     >
@@ -39,32 +38,31 @@ const Notification = ({ notification, comment, feed }: NotificationProps) => {
       </Link>
       {comment && (
         <span>
-          {comment.comment.length > 20
-            ? `${comment.comment.slice(0, 20)}...`
-            : comment.comment}
+          {comment.comment.length > 20 ?
+            `${comment.comment.slice(0,20)}...` : 
+            comment.comment}
         </span>
       )}
-      {(feed?.images || feed?.videos) && (
+      {feed && (
         <div>
-          {feed.images.length > 0 || feed.videos.length > 0 ? (
+          {(feed.images.length > 0 || feed.videos.length > 0) ?
             <Image
-              src={feed.images[0] || feed.videos[0]}
-              alt={feed.images[0] || feed.videos[0]}
-              width={100}
-              height={100}
-            />
-          ) : (
-            <span>
-              {feed.description.length > 20
-                ? `${feed.description.slice(0, 20)}...`
-                : feed.description}
-            </span>
-          )}
+            key={feed.id}
+            src={feed.images[0] || feed.videos[0]}
+            alt={feed.images[0] || feed.videos[0]}
+            width={100}
+            height={100}
+            loading="eager"
+            style={{width: 'auto', height: 'auto'}}
+            /> :
+            <span key={feed.id}>
+              {feed.description.length > 20 ? `${feed.description.slice(0,20)}...` : feed.description}
+            </span>}
         </div>
       )}{" "}
       <p> At {shortDateTimeFormatter.format(notif.createdAt)}</p>
     </article>
-  ));
+  });
 };
 
 export default Notification;

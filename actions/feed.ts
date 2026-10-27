@@ -240,13 +240,11 @@ export const likeFeed = async (formData: FormData) => {
     where: { postId: feed.id, userId: session.user.id },
   });
 
-  const notification = await prisma.notification.findFirst({
-    where: { senderId: session.user.id, receiverId: feed.userId },
-  });
-
   if (like) {
     await prisma.like.delete({ where: { id: like?.id } });
 
+    const notification = await prisma.notification.findFirst({where: {senderId: session.user.id, receiverId: feed.userId, contentId: like.id}})
+    
     if (notification) {
       await prisma.notification.delete({
         where: { id: notification.id },
