@@ -37,7 +37,7 @@ async function Profile({ params }: ProfileProps) {
   });
 
   const user = await prisma.user.findUnique({
-    where: { username: username },
+    where: { username: decodeURIComponent(username) },
     include: { _count: { select: { followers: true, following: true } } },
   });
 
@@ -91,8 +91,8 @@ async function Profile({ params }: ProfileProps) {
     <section className="flex flex-col gap-4 py-4">
       <Card>
         <CardHeader className="relative">
-          <CardTitle className="text-center">{username}</CardTitle>
-          {session?.user.username !== username && (
+          <CardTitle className="text-center">{decodeURIComponent(username)}</CardTitle>
+          {session?.user.username !== decodeURIComponent(username) && (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
@@ -105,7 +105,7 @@ async function Profile({ params }: ProfileProps) {
                 <DropdownMenuGroup>
                   <Form action={blockAccount}>
                     <input type="hidden" name="userId" value={user.id} />
-                    <input type="hidden" name="username" value={username} />
+                    <input type="hidden" name="username" value={decodeURIComponent(username)} />
                     <DropdownMenuItem>
                       <Button
                         type="submit"
@@ -127,7 +127,7 @@ async function Profile({ params }: ProfileProps) {
             <UpdateProfileImage
               userImage={user.image as string}
               username={user.username}
-              isSessionUser={session?.user.username === username}
+              isSessionUser={session?.user.username === decodeURIComponent(username)}
             />
             <Button
               type="button"
@@ -153,11 +153,11 @@ async function Profile({ params }: ProfileProps) {
           <CardDescription className="normal-case whitespace-pre-wrap">
             {user.description || "Hallo, Selamat Datang di Post Saya!"}
           </CardDescription>
-          {session?.user.username !== username &&
+          {session?.user.username !== decodeURIComponent(username) &&
             session?.user &&
             !isBlocked && (
               <form action={followAccount}>
-                <input type="hidden" name="username" value={username} />
+                <input type="hidden" name="username" value={decodeURIComponent(username)} />
                 <Button
                   type="submit"
                   variant={isFollowed ? "outline" : "secondary"}
@@ -196,7 +196,7 @@ async function Profile({ params }: ProfileProps) {
               >
                 <UpdateFeed
                   feed={feed}
-                  isAuthorized={session?.user.username === username}
+                  isAuthorized={session?.user.username === decodeURIComponent(username)}
                   session={session?.user}
                 />
               </article>

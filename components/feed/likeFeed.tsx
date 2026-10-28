@@ -120,7 +120,7 @@ function LikeFeed({ feed, session }: LikeFeedProps) {
             <DialogDescription>The Users Like This Post</DialogDescription>
             {optimisticState.userLikes.length > 0 ? (
               optimisticState.userLikes.map((like) => (
-                <Link key={like.user.username} href={`/${like.user.username}`}>
+                <Link key={like.user.username} href={`/${encodeURIComponent(like.user.username)}`}>
                   <Button
                     variant="outline"
                     className="justify-start py-8 gap-4 w-full cursor-pointer"

@@ -103,7 +103,7 @@ function CommentList({
       className={`${comment.parentId && "ms-8"} mt-2 overflow-clip relative ${repliesLineStyles}`}
     >
       <Link
-        href={`/${user.username}`}
+        href={`/${encodeURIComponent(user.username)}`}
         className="w-fit flex items-center gap-2"
       >
         <Avatar>

@@ -92,7 +92,7 @@ function Feed({ initialFeeds, session }: FeedProps) {
         <Card key={feed.id} className="gap-4">
           <CardHeader className="w-full">
             <Link
-              href={`/${feed.user.username}`}
+              href={`/${encodeURIComponent(feed.user.username)}`}
               className="flex items-center gap-2"
             >
               <Avatar>

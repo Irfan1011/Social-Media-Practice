@@ -15,9 +15,9 @@ datasource db {
 }
 
 model User {
-  id            String         @id @map("_id")
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
   name          String
-  username      String         @unique @default(uuid())
+  username      String         @unique
   email         String
   emailVerified Boolean        @default(false)
   image         String?
@@ -45,7 +45,7 @@ model User {
 }
 
 model Session {
-  id        String   @id @map("_id")
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   expiresAt DateTime
   token     String
   createdAt DateTime @default(now())
@@ -61,7 +61,7 @@ model Session {
 }
 
 model Account {
-  id                    String    @id @map("_id")
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
   accountId             String
   providerId            String
   userId                String
@@ -81,7 +81,7 @@ model Account {
 }
 
 model Verification {
-  id         String   @id @map("_id")
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
   identifier String
   value      String
   expiresAt  DateTime

@@ -9,7 +9,7 @@ async function Page({ params }: InterceptedFollowingProps) {
   const { username } = await params;
 
   const userId = await prisma.user.findFirst({
-    where: { username: username },
+    where: { username: decodeURIComponent(username) },
   });
 
   if (!userId) throw new Error("User Not Found");

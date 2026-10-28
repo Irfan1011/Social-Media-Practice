@@ -36,7 +36,7 @@ function SearchUsername({ users, sessionId }: SearchUsernameProps) {
     if (senderId) {
       const conversation = await findOrCreateConversation(senderId, receiverId);
       redirect(`/chat/direct/${conversation.id}`);
-    } else redirect(`/${username}`);
+    } else redirect(`/${encodeURIComponent(username)}`);
   };
 
   return (

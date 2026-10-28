@@ -23,14 +23,14 @@ function ProfileNavigation({ username }: ProfileNavigationProps) {
       <NavigationMenuList>
         <NavigationMenuItem>
           <NavigationMenuLink
-            className={`${navigationMenuTriggerStyle()} ${path === `/${username}` && "bg-secondary"}`}
-            render={<Link href={`/${username}`} />}
+            className={`${navigationMenuTriggerStyle()} ${path === `/${encodeURIComponent(username)}` && "bg-secondary"}`}
+            render={<Link href={`/${encodeURIComponent(username)}`} />}
           >
             Profile
           </NavigationMenuLink>
           <NavigationMenuLink
-            className={`${navigationMenuTriggerStyle()} ${path === `/${username}/setting` && "bg-secondary"}`}
-            render={<Link href={`/${username}/setting`} />}
+            className={`${navigationMenuTriggerStyle()} ${path === `/${encodeURIComponent(username)}/setting` && "bg-secondary"}`}
+            render={<Link href={`/${encodeURIComponent(username)}/setting`} />}
           >
             Setting
           </NavigationMenuLink>

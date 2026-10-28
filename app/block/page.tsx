@@ -40,7 +40,7 @@ const Page = async () => {
         {users.length > 0 && (
           <CardContent className="grid auto-rows-fr auto-cols-min">
             {users.map((user) => (
-              <Link key={user.id} href={`/${user.username}`}>
+              <Link key={user.id} href={`/${encodeURIComponent(user.username)}`}>
                 <Button variant="ghost" className="py-8 cursor-pointer">
                   <Avatar>
                     <AvatarImage src={user.image || ""} alt={user.username} />

@@ -106,7 +106,7 @@ const ViewStory = ({
                 style={{ width: `${(progress / duration) * 100}%` }}
               ></div>
               <Link
-                href={`/${stories[storyIndex].user.username}`}
+                href={`/${encodeURIComponent(stories[storyIndex].user.username)}`}
                 className="text-black bg-popover-foreground/25 p-2 rounded-sm flex items-center gap-2 z-1 absolute top-2 left-2"
               >
                 <Avatar size="lg" className="scale-100 ">

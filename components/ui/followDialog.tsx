@@ -64,7 +64,7 @@ function FollowDialog({ username, title, follows }: FollowProps) {
                     .includes(search.toLowerCase()) && (
                     <Link
                       key={follow.id}
-                      href={`/${follow.username}`}
+                      href={`/${encodeURIComponent(follow.username)}`}
                       style={{
                         display: follow.username
                           .toLowerCase()

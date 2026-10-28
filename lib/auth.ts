@@ -63,12 +63,17 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
+  advanced: {
+    database: {
+      generateId: false
+    }
+  },
   user: {
     deleteUser: { enabled: true },
     additionalFields: {
       username: {
         type: "string",
-        input: false,
+        input: true
       },
       description: {
         type: "string",

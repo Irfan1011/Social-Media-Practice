@@ -81,7 +81,7 @@ function Hamburger({ isAuth, username }: HamburgerProps) {
                 onClick={() => setIsOpen(false)}
               >
                 <Link
-                  href={`/${username}`}
+                  href={`/${encodeURIComponent(username)}`}
                   className="flex gap-2 place-items-center"
                 >
                   Profile <User />

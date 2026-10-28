@@ -56,7 +56,7 @@ const Recommendation = ({ userRecommendation }: RecommendationProps) => {
               className="flex flex-wrap justify-between items-center mb-2"
             >
               <Link
-                href={`/${user.username}`}
+                href={`/${encodeURIComponent(user.username)}`}
                 className="w-fit flex items-center gap-2"
               >
                 <Avatar>

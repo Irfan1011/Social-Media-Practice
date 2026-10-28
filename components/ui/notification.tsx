@@ -22,7 +22,7 @@ const Notification = ({ notification }: NotificationProps) => {
       className="w-full flex flex-wrap justify-between items-center mb-4"
     >
       <Link
-        href={`/${notif.sender.username}`}
+        href={`/${encodeURIComponent(notif.sender.username)}`}
         className="flex gap-2 items-center"
       >
         <Avatar>

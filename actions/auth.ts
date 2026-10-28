@@ -40,14 +40,14 @@ export const signUpAction = async (prevState: object, formData: FormData) => {
       values: {
         email: data.email,
         password: data.password,
-        name: data.name,
-      },
+        name: data.name
+      }
     };
   }
 
   const user = await prisma.user.findFirst({
     where: {
-      email: data.email,
+      email: validator.data.email,
     },
   });
 
@@ -56,15 +56,20 @@ export const signUpAction = async (prevState: object, formData: FormData) => {
       ...prevState,
       errors: { email: "Email Already Exist" },
       values: {
-        email: data.email,
-        password: data.password,
-        name: data.name,
+        email: validator.data.email,
+        password: validator.data.password,
+        name: validator.data.name,
       },
     };
   }
 
   await auth.api.signUpEmail({
-    body: data,
+    body: {
+      email: validator.data.email,
+      password: validator.data.password,
+      name: validator.data.name,
+      username: validator.data.email
+    },
   });
 
   redirect("/signin");
@@ -95,7 +100,7 @@ export const signInAction = async (prevState: object, formData: FormData) => {
   }
 
   await auth.api.signInEmail({
-    body: data,
+    body: validator.data,
   });
 
   redirect("/");
@@ -130,7 +135,7 @@ export const sendForgetPassword = async (
   await auth.api.requestPasswordReset({
     body: {
       email: email,
-      redirectTo: "http://localhost:3000/reset-password",
+      redirectTo: `${process.env.BETTER_AUTH_URL}/reset-password`,
     },
   });
 
@@ -159,7 +164,7 @@ export const resetPassword = async (prevState: object, formData: FormData) => {
 
   await auth.api.resetPassword({
     body: {
-      newPassword: newPassword,
+      newPassword: validator.data.password,
       token,
     },
   });
@@ -185,8 +190,8 @@ export const updatePassword = async (_: unknown, formData: FormData) => {
 
   await auth.api.changePassword({
     body: {
-      newPassword: newPassword,
-      currentPassword: currentPassword,
+      newPassword: validator.data.newPassword,
+      currentPassword: validator.data.currentPassword,
       revokeOtherSessions: true,
     },
     headers: await headers(),
