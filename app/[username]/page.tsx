@@ -38,7 +38,7 @@ async function Profile({ params }: ProfileProps) {
 
   const user = await prisma.user.findUnique({
     where: { username: decodeURIComponent(username) },
-    include: { _count: { select: { followers: true, following: true } } },
+    include: { following:true, followers: true },
   });
 
   if (!user) {
@@ -135,7 +135,7 @@ async function Profile({ params }: ProfileProps) {
               className="flex flex-col items-center gap-0 py-8 cursor-pointer"
             >
               <Link href={`/${user.username}/followers`}>
-                <p>{user._count.followers}</p>
+                <p>{user.followers.length}</p>
                 <p>Followers</p>
               </Link>
             </Button>
@@ -145,7 +145,7 @@ async function Profile({ params }: ProfileProps) {
               className="flex flex-col items-center gap-0 py-8 cursor-pointer"
             >
               <Link href={`/${user.username}/following`}>
-                <p>{user._count.following}</p>
+                <p>{user.following.length}</p>
                 <p>Following</p>
               </Link>
             </Button>
