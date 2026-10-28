@@ -69,6 +69,10 @@ const Page = async () => {
           </CardContent>
         </Card>
       )}
+
+      {(followNotifications.length === 0 && likeNotifications.length === 0 && commentNotifications.length === 0) && 
+       <p>No Notification Yet!</p>
+      }
     </section>
   );
 };

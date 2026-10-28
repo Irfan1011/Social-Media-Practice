@@ -107,6 +107,11 @@ async function Navbar() {
                       />
                     </DropdownMenuItem>
                   )}
+                  {(followNotifications.length === 0 && likeNotifications.length === 0 && commentNotifications.length === 0) &&
+                   <DropdownMenuItem className="flex flex-col items-start">
+                    <DropdownMenuLabel>No Notification Yet!</DropdownMenuLabel>
+                   </DropdownMenuItem>
+                  }
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
